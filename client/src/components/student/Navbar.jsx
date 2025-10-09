@@ -53,6 +53,7 @@ const{user} = useUser()
           {user && (
             <>
               <button
+                className="cursor-pointer"
                 onClick={() => {
                   navigate("/educator");
                 }}

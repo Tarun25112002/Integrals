@@ -2,13 +2,14 @@ import { useContext } from "react";
 import { AppContext } from "../../context/AppContext";
 import { assets } from "../../assets/assets";
 import { Link } from "react-router-dom";
-const CouseCard = ({ course }) => {
-  const { currency,calculateRating } = useContext(AppContext);
+
+const CourseCard = ({ course }) => {
+  const { currency, calculateRating } = useContext(AppContext);
   return (
     <Link
       to={`/course/${course._id}`}
       onClick={() => scrollTo(0, 0)}
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg hover:bg-blue-50 transition-all duration-300"
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg hover:bg-blue-50 transform hover:scale-105 transition-all duration-300"
     >
       <img
         src={course.courseThumbnail}
@@ -23,10 +24,21 @@ const CouseCard = ({ course }) => {
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-gray-700">{calculateRating(course)}</p>
+            <p className="text-sm font-medium text-gray-700">
+              {calculateRating(course)}
+            </p>
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <img key={i} src={i<Math.floor(calculateRating(course))? assets.star:assets.star_blank} alt="star" className="w-4 h-4" />
+                <img
+                  key={i}
+                  src={
+                    i < Math.floor(calculateRating(course))
+                      ? assets.star
+                      : assets.star_blank
+                  }
+                  alt="star"
+                  className="w-4 h-4"
+                />
               ))}
             </div>
           </div>
@@ -44,4 +56,4 @@ const CouseCard = ({ course }) => {
   );
 };
 
-export default CouseCard;
+export default CourseCard;
