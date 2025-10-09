@@ -1,5 +1,6 @@
 import { dummyTestimonial } from "../../assets/assets";
 import { assets } from "../../assets/assets";
+
 const TestimonialsSection = () => {
   return (
     <div className="pb-16 px-6 md:px-0 max-w-6xl mx-auto">

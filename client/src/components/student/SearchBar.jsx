@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { assets } from "../../assets/assets";
 import { useNavigate } from "react-router-dom";
+
 const SearchBar = ({ data }) => {
   const navigate = useNavigate();
   const [input, setInput] = useState(data ? data : "");
+
   const onSearchHandler = (e) => {
     e.preventDefault();
     navigate(`/course-list/${input}`);
   };
+
   return (
     <form
       onSubmit={onSearchHandler}
@@ -23,11 +26,11 @@ const SearchBar = ({ data }) => {
         value={input}
         type="text"
         placeholder="Search for courses"
-        className="w-full h-full outline-none text-gray-500/80"
+        className="w-full h-full outline-none text-gray-500/80 bg-transparent"
       />
       <button
         type="submit"
-        className="bg-blue-600 rounded text-white md:px-10 px-7 md:py-3 py-2 mx-1 cursor-pointer"
+        className="bg-blue-600 hover:bg-blue-700 rounded text-white md:px-10 px-7 md:py-3 py-2 mx-1 cursor-pointer transition-colors duration-200"
       >
         Search
       </button>

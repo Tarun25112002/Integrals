@@ -1,14 +1,15 @@
 import { assets } from "../../assets/assets";
 import { Link, useLocation } from "react-router-dom";
-import { useClerk, UserButton, useUser } from '@clerk/clerk-react'
-import {AppContext} from "../../context/AppContext"
-import {useContext} from "react"
+import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
+import { AppContext } from "../../context/AppContext";
+import { useContext } from "react";
+
 const Navbar = () => {
   const location = useLocation();
   const isCourseListpage = location.pathname.includes("/course-list");
-const {openSignIn} = useClerk()
-const {navigate,isEducator} = useContext(AppContext)
-const{user} = useUser()
+  const { openSignIn } = useClerk();
+  const { navigate, isEducator } = useContext(AppContext);
+  const { user } = useUser();
   return (
     <div
       className={`flex justify-between items-center px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 ${
