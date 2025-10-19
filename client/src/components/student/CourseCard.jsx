@@ -14,7 +14,7 @@ const CourseCard = ({ course }) => {
       <img
         src={course.courseThumbnail}
         alt="course thumbnail"
-        className="w-full h-48 object-contain"
+        className="w-full h-48 object-cover"
       />
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">

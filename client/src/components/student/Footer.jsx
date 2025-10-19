@@ -85,7 +85,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="text-center">
             <h3 className="text-lg font-semibold mb-6 text-white">
               Quick Links
             </h3>
@@ -134,7 +134,7 @@ const Footer = () => {
           </div>
 
           {/* Support */}
-          <div>
+          <div className="text-center">
             <h3 className="text-lg font-semibold mb-6 text-white">Support</h3>
             <ul className="space-y-3">
               <li>
