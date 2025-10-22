@@ -42,7 +42,10 @@ const CourseCard = ({ course }) => {
               ))}
             </div>
           </div>
-          <p className="text-sm text-gray-500">{course.courseRatings.length}</p>
+          <p className="text-sm text-gray-500">
+            {course.courseRatings.length}{" "}
+            {course.courseRatings.length === 1 ? "rating" : "ratings"}
+          </p>
         </div>
         <p className="text-lg font-bold text-blue-600">
           {currency}
