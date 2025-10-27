@@ -36,13 +36,10 @@ const CoursesSection = () => {
           <Link
             to="/course-list"
             onClick={() => scrollTo(0, 0)}
-            className="group relative inline-flex items-center mt-10 text-gray-700 bg-white border border-gray-200 hover:border-blue-500 hover:text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 ease-out shadow-sm hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
+            className="group relative inline-flex items-center mt-10 text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300 px-8 py-3 rounded-xl font-semibold transition-all duration-300 ease-out shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
           >
-            {/* Blue shading background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out rounded-xl" />
-
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 ease-out" />
+            {/* Subtle shimmer effect */}
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-500 ease-out" />
 
             {/* Button text with icon */}
             <span className="relative z-10 flex items-center gap-2">

@@ -8,6 +8,7 @@ import humanizeDuration from "humanize-duration";
 const CourseDetails = () => {
   const { id } = useParams();
   const [courseData, setCourseData] = useState(null);
+  const [expandedChapters, setExpandedChapters] = useState(new Set());
   const {
     allCourses,
     calculateRating,
@@ -18,6 +19,16 @@ const CourseDetails = () => {
   const fetchCourseData = async () => {
     const findCourse = allCourses.find((course) => course._id === id);
     setCourseData(findCourse);
+  };
+
+  const toggleChapter = (chapterIndex) => {
+    const newExpandedChapters = new Set(expandedChapters);
+    if (newExpandedChapters.has(chapterIndex)) {
+      newExpandedChapters.delete(chapterIndex);
+    } else {
+      newExpandedChapters.add(chapterIndex);
+    }
+    setExpandedChapters(newExpandedChapters);
   };
 
   useEffect(() => {
@@ -144,7 +155,7 @@ const CourseDetails = () => {
                   key={index}
                   className="border-b border-gray-100 last:border-b-0"
                 >
-                  <div className="p-4 hover:bg-gray-50 transition-colors duration-200">
+                  <div className="p-4 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300 cursor-pointer">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -193,49 +204,58 @@ const CourseDetails = () => {
                             </div>
                           </div>
 
-                          {/* Lectures List */}
-                          <div className="mt-3 ml-11">
-                            <div className="space-y-2">
-                              {chapter.chapterContent.map((lecture, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                                >
-                                  <div className="flex-shrink-0">
-                                    <img
-                                      src={assets.play_icon}
-                                      alt="play icon"
-                                      className="w-4 h-4 text-gray-500"
-                                    />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 truncate">
-                                      {lecture.lectureTitle}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className="text-xs text-gray-500">
-                                        {humanizeDuration(
-                                          lecture.lectureDuration * 60 * 1000,
-                                          { units: ["h", "m", "s"] }
-                                        )}
-                                      </span>
-                                      {lecture.isPreviewFree && (
-                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                                          Preview
+                          {/* Lectures List - Conditionally Rendered */}
+                          {expandedChapters.has(index) && (
+                            <div className="mt-3 ml-11">
+                              <div className="space-y-2">
+                                {chapter.chapterContent.map((lecture, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-sky-50 transition-all duration-300 cursor-pointer"
+                                  >
+                                    <div className="flex-shrink-0">
+                                      <img
+                                        src={assets.play_icon}
+                                        alt="play icon"
+                                        className="w-4 h-4 text-gray-500"
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-gray-900 truncate">
+                                        {lecture.lectureTitle}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-500">
+                                          {humanizeDuration(
+                                            lecture.lectureDuration * 60 * 1000,
+                                            { units: ["h", "m", "s"] }
+                                          )}
                                         </span>
-                                      )}
+                                        {lecture.isPreviewFree && (
+                                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                                            Preview
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
 
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                      <button
+                        onClick={() => toggleChapter(index)}
+                        className="p-2 text-gray-400 hover:text-gray-600 transition-all duration-200"
+                      >
                         <svg
-                          className="w-5 h-5"
+                          className={`w-5 h-5 transition-transform duration-200 ${
+                            expandedChapters.has(index)
+                              ? "rotate-180"
+                              : "rotate-0"
+                          }`}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
