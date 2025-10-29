@@ -10,35 +10,66 @@ const MyEnrollments = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // all, in-progress, completed
 
-  const getProgress = (courseId) => {
-    try {
-      const map = JSON.parse(localStorage.getItem("courseProgress") || "{}");
-      const p = map?.[courseId];
-      return typeof p === "number" && !Number.isNaN(p)
-        ? Math.max(0, Math.min(100, Math.floor(p)))
-        : 0;
-    } catch {
-      return 0;
-    }
-  };
+  const progressArray = [
+    { lectureCompleted: 1, totalLectures: 5 },
+    { lectureCompleted: 3, totalLectures: 6 },
+    { lectureCompleted: 4, totalLectures: 4 },
+    { lectureCompleted: 0, totalLectures: 3 },
+    { lectureCompleted: 5, totalLectures: 7 },
+    { lectureCompleted: 6, totalLectures: 8 },
+    { lectureCompleted: 2, totalLectures: 6 },
+    { lectureCompleted: 4, totalLectures: 10 },
+    { lectureCompleted: 3, totalLectures: 5 },
+    { lectureCompleted: 7, totalLectures: 7 },
+    { lectureCompleted: 1, totalLectures: 4 },
+    { lectureCompleted: 0, totalLectures: 2 },
+    { lectureCompleted: 5, totalLectures: 5 },
+  ];
+
+  // Map courses with their progress
+  const coursesWithProgress = useMemo(() => {
+    return enrolledCourses.map((course, index) => {
+      const progressData = progressArray[index] || {
+        lectureCompleted: 0,
+        totalLectures: 1,
+      };
+      const { lectureCompleted, totalLectures } = progressData;
+      const progress =
+        totalLectures === 0
+          ? 0
+          : Math.floor((lectureCompleted / totalLectures) * 100);
+
+      return {
+        ...course,
+        progress,
+        lectureCompleted,
+        totalLectures,
+        originalIndex: index,
+      };
+    });
+  }, [enrolledCourses]);
 
   // Calculate stats
-  const totalCourses = enrolledCourses.length;
-  const completedCourses = useMemo(
-    () => enrolledCourses.filter((c) => getProgress(c._id) === 100).length,
-    [enrolledCourses]
-  );
-  const inProgressCourses = totalCourses - completedCourses;
+  const totalCourses = coursesWithProgress.length;
+  const completedCourses = coursesWithProgress.filter(
+    (c) => c.progress === 100
+  ).length;
+  const inProgressCourses = coursesWithProgress.filter(
+    (c) => c.progress > 0 && c.progress < 100
+  ).length;
 
   // Filter courses
   const filteredCourses = useMemo(() => {
-    return enrolledCourses.filter((course) => {
-      const progress = getProgress(course._id);
-      if (filter === "completed") return progress === 100;
-      if (filter === "in-progress") return progress < 100;
-      return true;
-    });
-  }, [enrolledCourses, filter]);
+    if (filter === "completed") {
+      return coursesWithProgress.filter((course) => course.progress === 100);
+    }
+    if (filter === "in-progress") {
+      return coursesWithProgress.filter(
+        (course) => course.progress > 0 && course.progress < 100
+      );
+    }
+    return coursesWithProgress;
+  }, [coursesWithProgress, filter]);
 
   return (
     <>
@@ -196,7 +227,7 @@ const MyEnrollments = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {filteredCourses.map((course) => {
-                      const progress = getProgress(course._id);
+                      const progress = course.progress;
                       const isCompleted = progress === 100;
                       const educatorName =
                         typeof course.educator === "object" &&
@@ -247,38 +278,32 @@ const MyEnrollments = () => {
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 6h16M4 10h16M4 14h10"
-                                  />
-                                </svg>
-                                <span className="text-sm font-medium">
-                                  {calculateNoOfLectures(course)} lectures
-                                </span>
+                            
+                               
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex-1 bg-gray-200 rounded-full h-2.5 max-w-[120px]">
-                                <div
-                                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                                    isCompleted ? "bg-green-600" : "bg-blue-600"
-                                  }`}
-                                  style={{ width: `${progress}%` }}
-                                ></div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-200 rounded-full h-2.5 max-w-[120px]">
+                                  <div
+                                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                                      isCompleted
+                                        ? "bg-green-600"
+                                        : "bg-blue-600"
+                                    }`}
+                                    style={{ width: `${progress}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-sm font-semibold text-gray-700 min-w-[45px]">
+                                  {progress}%
+                                </span>
                               </div>
-                              <span className="text-sm font-semibold text-gray-700 min-w-[45px]">
-                                {progress}%
-                              </span>
+                              <p className="text-xs text-gray-500">
+                                {course.lectureCompleted} /{" "}
+                                {course.totalLectures} lectures
+                              </p>
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -323,7 +348,7 @@ const MyEnrollments = () => {
               {/* Mobile Cards */}
               <div className="md:hidden space-y-4">
                 {filteredCourses.map((course) => {
-                  const progress = getProgress(course._id);
+                  const progress = course.progress;
                   const isCompleted = progress === 100;
                   const educatorName =
                     typeof course.educator === "object" && course.educator?.name
@@ -369,7 +394,8 @@ const MyEnrollments = () => {
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-gray-600">Progress:</span>
                             <span className="font-semibold text-gray-800">
-                              {progress}%
+                              {course.lectureCompleted} / {course.totalLectures}{" "}
+                              lectures ({progress}%)
                             </span>
                           </div>
                           <div className="bg-gray-200 rounded-full h-2.5">
