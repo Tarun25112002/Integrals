@@ -5,7 +5,8 @@ import Footer from "../../components/student/Footer";
 import { dummyEducatorData } from "../../assets/assets";
 
 const MyEnrollments = () => {
-  const { enrolledCourses, calculateCourseDuration, calculateNoOfLectures } = useContext(AppContext);
+  const { enrolledCourses, calculateCourseDuration, calculateNoOfLectures } =
+    useContext(AppContext);
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // all, in-progress, completed
 
@@ -55,7 +56,7 @@ const MyEnrollments = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:bg-sky-50/70 hover:backdrop-blur-sm hover:border-sky-200 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Courses</p>
@@ -81,7 +82,7 @@ const MyEnrollments = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:bg-sky-50/70 hover:backdrop-blur-sm hover:border-sky-200 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">In Progress</p>
@@ -107,7 +108,7 @@ const MyEnrollments = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 hover:bg-sky-50/70 hover:backdrop-blur-sm hover:border-sky-200 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Completed</p>
@@ -198,7 +199,8 @@ const MyEnrollments = () => {
                       const progress = getProgress(course._id);
                       const isCompleted = progress === 100;
                       const educatorName =
-                        typeof course.educator === "object" && course.educator?.name
+                        typeof course.educator === "object" &&
+                        course.educator?.name
                           ? course.educator.name
                           : dummyEducatorData?.name || "Instructor";
 
