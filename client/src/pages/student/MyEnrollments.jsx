@@ -1,23 +1,22 @@
-import { useState, useEffect } from "react";
-
 const MyEnrollments = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
-    <div>
-      <h1>
-        {isLoading ? { isLoading } : "My Enrollments"}
-      </h1>
-    </div>
+    <>
+      <div className="md:px-36 px-8 pt-10">
+        <h1 className="text-2xl font-semibold">My Enrollments</h1>
+        <table className="md:table-auto table-fixed w-full overflow-hidden border mt-10">
+          <thead className="text-gray-900 border border-gray-500/20 text-sm text-left max-sm:hidden">
+            <tr>
+              <th className="px-4 py-3 font-semibold truncate">Course</th>
+              <th className="px-4 py-3 font-semibold truncate">Duration</th>
+              <th className="px-4 py-3 font-semibold truncate">Completed</th>
+              <th className="px-4 py-3 font-semibold truncate">Status</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </>
   );
+
 };
 
 export default MyEnrollments;
