@@ -285,7 +285,148 @@ const CourseDetails = () => {
           </div>
         </div>
         {/* right column */}
-        <div></div>
+        <div className="w-full md:w-auto md:max-w-md">
+          {/* Course Thumbnail */}
+          <div className="relative mb-6">
+            <img
+              src={courseData.courseThumbnail}
+              alt="course thumbnail"
+              className="w-full h-48 md:h-64 object-cover rounded-xl shadow-lg"
+            />
+            <div className="absolute inset-0 bg-black/20 rounded-xl"></div>
+            <div className="absolute top-4 right-4">
+              <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+                <span className="text-sm font-semibold text-gray-800">
+                  {courseData.discount}% OFF
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Card */}
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-3xl font-bold text-gray-900">
+                  $
+                  {(
+                    courseData.coursePrice -
+                    (courseData.discount * courseData.coursePrice) / 100
+                  ).toFixed(2)}
+                </span>
+                <span className="text-lg text-gray-500 line-through">
+                  ${courseData.coursePrice}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600">
+                One-time payment • Lifetime access
+              </p>
+            </div>
+
+            {/* Limited Time Offer */}
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <img
+                  src={assets.time_left_clock_icon}
+                  alt="time left clock icon"
+                  className="w-5 h-5"
+                />
+                <span className="text-sm font-semibold text-red-700">
+                  Limited Time Offer
+                </span>
+              </div>
+              <p className="text-sm text-red-600">
+                <span className="font-medium">5 days</span> left at this price
+              </p>
+            </div>
+
+            {/* Course Features */}
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-700">
+                  {calculateNoOfLectures(courseData)} video lectures
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-700">
+                  {calculateCourseDuration(courseData)} total duration
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-700">Lifetime access</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-3 h-3 text-green-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-700">
+                  Certificate of completion
+                </span>
+              </div>
+            </div>
+
+            {/* Enroll Button */}
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+              Enroll Now
+            </button>
+
+            {/* Money Back Guarantee */}
+            <div className="text-center mt-4">
+              <p className="text-xs text-gray-500">
+                30-day money-back guarantee
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   ) : (
