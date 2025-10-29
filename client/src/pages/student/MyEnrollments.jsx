@@ -111,7 +111,7 @@ const MyEnrollments = () => {
             <div className="bg-white rounded-xl p-6 border border-gray-200 hover:bg-sky-50/70 hover:backdrop-blur-sm hover:border-sky-200 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Completed</p>
+                  <p className=" text-sm text-gray-600 mb-1">Completed</p>
                   <p className="text-3xl font-bold text-gray-800">
                     {completedCourses}
                   </p>
@@ -136,10 +136,10 @@ const MyEnrollments = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-2 inline-flex gap-2">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-2 inline-flex gap-2 ">
             <button
               onClick={() => setFilter("all")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                 filter === "all"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-100"
@@ -149,7 +149,7 @@ const MyEnrollments = () => {
             </button>
             <button
               onClick={() => setFilter("in-progress")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                 filter === "in-progress"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-100"
@@ -159,7 +159,7 @@ const MyEnrollments = () => {
             </button>
             <button
               onClick={() => setFilter("completed")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                 filter === "completed"
                   ? "bg-blue-600 text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-100"
@@ -452,7 +452,7 @@ const MyEnrollments = () => {
               </p>
               <button
                 onClick={() => navigate("/course-list")}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center gap-2"
+                className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center gap-2"
               >
                 <svg
                   className="w-5 h-5"
