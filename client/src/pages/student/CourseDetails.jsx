@@ -5,11 +5,13 @@ import Loading from "../../components/student/Loading";
 import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
 import Footer from "../../components/student/Footer";
+import Youtube from "react-youtube";
 
 const CourseDetails = () => {
   const { id } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
+  const [playerData, setPlayerData] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState(new Set());
   const {
     allCourses,
@@ -234,7 +236,16 @@ const CourseDetails = () => {
                                           )}
                                         </span>
                                         {lecture.isPreviewFree && (
-                                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                                          <span
+                                            onClick={() =>
+                                              setPlayerData({
+                                                videoId: lecture.lectureUrl
+                                                  .split("/")
+                                                  .pop(),
+                                              })
+                                            }
+                                            className=" text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium"
+                                          >
                                             Preview
                                           </span>
                                         )}
@@ -287,26 +298,115 @@ const CourseDetails = () => {
           </div>
         </div>
         {/* right column */}
-        <div className="w-full md:w-auto md:max-w-md">
-          {/* Course Thumbnail */}
-          <div className="relative mb-6">
-            <img
-              src={courseData.courseThumbnail}
-              alt="course thumbnail"
-              className="w-full h-48 md:h-64 object-cover rounded-xl shadow-lg"
-            />
-            <div className="absolute inset-0 bg-black/20 rounded-xl"></div>
-            <div className="absolute top-4 right-4">
-              <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
-                <span className="text-sm font-semibold text-gray-800">
-                  {courseData.discount}% OFF
-                </span>
+        <div className="w-full md:w-auto md:max-w-md md:sticky md:top-24">
+          {/* Course Video/Thumbnail */}
+          <div className="relative mb-6 group">
+            {playerData ? (
+              <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                <Youtube
+                  videoId={playerData.videoId}
+                  opts={{
+                    playerVars: {
+                      autoplay: 1,
+                      modestbranding: 1,
+                      rel: 0,
+                    },
+                  }}
+                  iframeClassName="w-full aspect-video"
+                />
+                <button
+                  onClick={() => setPlayerData(null)}
+                  className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer"
+                  aria-label="Close video"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="relative rounded-xl overflow-hidden shadow-2xl">
+                <img
+                  src={courseData.courseThumbnail}
+                  alt="course thumbnail"
+                  className="w-full h-48 md:h-64 object-cover"
+                />
+                {/* Dark overlay on hover */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300"></div>
+
+                {/* Play button overlay - only show if there's a preview available */}
+                {courseData.courseContent.some((chapter) =>
+                  chapter.chapterContent.some(
+                    (lecture) => lecture.isPreviewFree
+                  )
+                ) && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <button
+                      onClick={() => {
+                        // Find first preview lecture
+                        const previewLecture = courseData.courseContent
+                          .flatMap((chapter) => chapter.chapterContent)
+                          .find((lecture) => lecture.isPreviewFree);
+                        if (previewLecture) {
+                          setPlayerData({
+                            videoId: previewLecture.lectureUrl.split("/").pop(),
+                          });
+                        }
+                      }}
+                      className="bg-white/90 hover:bg-white text-blue-600 p-6 rounded-full shadow-2xl transform group-hover:scale-110 transition-all duration-300 cursor-pointer"
+                      aria-label="Play preview"
+                    >
+                      <svg
+                        className="w-8 h-8"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+
+                {/* Preview badge */}
+                {courseData.courseContent.some((chapter) =>
+                  chapter.chapterContent.some(
+                    (lecture) => lecture.isPreviewFree
+                  )
+                ) && (
+                  <div className="absolute bottom-4 left-4">
+                    <div className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-lg flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Preview Available
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Pricing Card */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300">
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="text-3xl font-bold text-gray-900">
@@ -417,8 +517,8 @@ const CourseDetails = () => {
             </div>
 
             {/* Enroll Button */}
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
-              {isAlreadyEnrolled ? 'Already Enrolled' : 'Enroll Now'}
+            <button className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+              {isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}
             </button>
 
             {/* Money Back Guarantee */}
