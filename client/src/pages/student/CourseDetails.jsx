@@ -4,10 +4,12 @@ import { AppContext } from "../../context/AppContext";
 import Loading from "../../components/student/Loading";
 import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
+import Footer from "../../components/student/Footer";
 
 const CourseDetails = () => {
   const { id } = useParams();
   const [courseData, setCourseData] = useState(null);
+  const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState(new Set());
   const {
     allCourses,
@@ -416,7 +418,7 @@ const CourseDetails = () => {
 
             {/* Enroll Button */}
             <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
-              Enroll Now
+              {isAlreadyEnrolled ? 'Already Enrolled' : 'Enroll Now'}
             </button>
 
             {/* Money Back Guarantee */}
@@ -428,6 +430,7 @@ const CourseDetails = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   ) : (
     <Loading />

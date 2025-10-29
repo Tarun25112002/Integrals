@@ -23,11 +23,7 @@ const Footer = () => {
                 Integrals
               </h2>
             </div>
-            <p className="text-gray-300 leading-relaxed mb-6 max-w-md">
-              Empowering learners worldwide with cutting-edge educational
-              technology. Join thousands of students who have transformed their
-              careers through our comprehensive online learning platform.
-            </p>
+            
             <div className="flex space-x-4">
               {/* Facebook */}
               <a
@@ -98,14 +94,7 @@ const Footer = () => {
                   About Us
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  Courses
-                </a>
-              </li>
+             
               <li>
                 <a
                   href="#"
@@ -114,22 +103,8 @@ const Footer = () => {
                   Instructors
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  Blog
-                </a>
-              </li>
+              
+            
             </ul>
           </div>
 
@@ -137,14 +112,7 @@ const Footer = () => {
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-6 text-white">Support</h3>
             <ul className="space-y-3">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  Help Center
-                </a>
-              </li>
+             
               <li>
                 <a
                   href="#"
@@ -161,49 +129,12 @@ const Footer = () => {
                   Privacy Policy
                 </a>
               </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white hover:font-semibold"
-                >
-                  FAQ
-                </a>
-              </li>
             </ul>
           </div>
         </div>
 
-        {/* Newsletter Signup */}
-        <div className="border-t border-gray-700 py-12">
-          <div className="max-w-2xl mx-auto text-center">
-            <h3 className="text-2xl font-bold mb-4 text-white">Stay Updated</h3>
-            <p className="text-gray-300 mb-8 text-lg">
-              Get the latest courses, updates, and exclusive content delivered
-              to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 rounded-xl bg-gray-800 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 text-center sm:text-left"
-              />
-              <button className="cursor-pointer px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold  transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl">
-                Subscribe
-              </button>
-            </div>
-            <p className="text-gray-400 text-sm mt-4">
-              Join 500+ learners who trust us with their education
-            </p>
-          </div>
-        </div>
+      
+        
 
         {/* Bottom bar */}
         <div className="border-t border-gray-700 py-8">
