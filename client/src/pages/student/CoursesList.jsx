@@ -5,12 +5,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import CourseCard from "../../components/student/CourseCard";
 import { assets } from "../../assets/assets";
 import Footer from "../../components/student/Footer";
+import Loading from "../../components/student/Loading";
 
 const CoursesList = () => {
   const { allCourses } = useContext(AppContext);
   const { input } = useParams();
   const navigate = useNavigate();
-  const [filteredCourse, setFilteredCourse] = useState(allCourses);
+  const [filteredCourse, setFilteredCourse] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     if (allCourses && allCourses.length > 0) {
       const tempCourses = allCourses.slice();
@@ -21,11 +24,17 @@ const CoursesList = () => {
             )
           )
         : setFilteredCourse(tempCourses);
+      setIsLoading(false);
     }
   }, [allCourses, input]);
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <>
-      <div className="relative md:px-36 px-8 pt-20 text-left">
+      <div className="relative md:px-36 px-8 pt-20 text-left fade-in">
         <div className="flex md:flex-row flex-col gap-6 items-start justify-between w-full">
           <div>
             {" "}
@@ -80,7 +89,7 @@ const CoursesList = () => {
           ))}
         </div>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };
