@@ -96,7 +96,7 @@ const CourseDetails = () => {
           </div>
 
           {/* Instructor Section */}
-          <div className="flex items-start gap-3 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300 cursor-pointer">
+          <div className="flex items-start gap-3 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300">
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <img
                 src={assets.user_icon}
@@ -155,7 +155,7 @@ const CourseDetails = () => {
                   key={index}
                   className="border-b border-gray-100 last:border-b-0"
                 >
-                  <div className="p-4 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300 cursor-pointer">
+                  <div className="p-4 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300 ">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -251,7 +251,7 @@ const CourseDetails = () => {
                         className="p-2 text-gray-400 hover:text-gray-600 transition-all duration-200"
                       >
                         <svg
-                          className={`w-5 h-5 transition-transform duration-200 ${
+                          className={`w-5 h-5 transition-transform duration-200 cursor-pointer ${
                             expandedChapters.has(index)
                               ? "rotate-180"
                               : "rotate-0"
@@ -273,6 +273,15 @@ const CourseDetails = () => {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="py-20 text-sm md:text-default">
+            <h3 className="text-xl font-semibold text-gray-800">
+              Course Description
+            </h3>
+            <div
+              className="mt-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl p-4 md:p-5 text-gray-700 leading-relaxed space-y-3 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300  [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-900 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-gray-900 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1 [&_strong]:text-gray-900"
+              dangerouslySetInnerHTML={{ __html: courseData.courseDescription }}
+            />
           </div>
         </div>
         {/* right column */}
