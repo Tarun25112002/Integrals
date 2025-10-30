@@ -6,6 +6,7 @@ import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
 import Footer from "../../components/student/Footer";
 import Youtube from "react-youtube";
+import Rating from "../../components/student/Rating";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -59,25 +60,7 @@ const CourseDetails = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 pt-4">
             {/* Rating Section */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold text-gray-800">
-                  {calculateRating(courseData)}
-                </span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <img
-                      key={i}
-                      src={
-                        i < Math.floor(calculateRating(courseData))
-                          ? assets.star
-                          : assets.star_blank
-                      }
-                      alt="star"
-                      className="w-4 h-4"
-                    />
-                  ))}
-                </div>
-              </div>
+              <Rating rating={calculateRating(courseData)} size="small" />
               <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
                 {courseData.courseRatings.length}{" "}
                 {courseData.courseRatings.length === 1 ? "rating" : "ratings"}
