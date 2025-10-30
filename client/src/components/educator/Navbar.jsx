@@ -1,9 +1,10 @@
 import { assets } from "../../assets/assets";
-import { UserButton, useUser } from "@clerk/clerk-react";
+import { UserButton, useUser, useClerk } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -24,14 +25,20 @@ const Navbar = () => {
       <div className="flex items-center gap-5 text-gray-700 relative">
         {isLoaded ? (
           <>
-            <p className="font-medium">
-              {getGreeting()},{" "}
-              {user ? user.firstName || user.fullName : "Educator"}! 👋
-            </p>
             {user ? (
-              <UserButton />
+              <>
+                <p className="font-medium">
+                  {getGreeting()}, {user.firstName || user.fullName}! 👋
+                </p>
+                <UserButton />
+              </>
             ) : (
-              <img className="max-w-8" src={assets.profile_img} alt="profile" />
+              <button
+                onClick={() => openSignIn()}
+                className="bg-blue-600 text-white px-5 py-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors font-medium"
+              >
+                Sign In
+              </button>
             )}
           </>
         ) : (
