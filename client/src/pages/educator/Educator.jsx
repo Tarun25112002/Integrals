@@ -1,8 +1,9 @@
 import { Outlet } from "react-router-dom";
+import Navbar from "../../components/educator/Navbar";
 const Educator = () => {
   return (
     <div>
-      <h1>Heading</h1>
+     <Navbar/>
       <div>
         <Outlet />
       </div>
