@@ -3,9 +3,8 @@ import { UserButton, useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
-  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good Morning";
@@ -23,14 +22,23 @@ const Navbar = () => {
         />
       </Link>
       <div className="flex items-center gap-5 text-gray-700 relative">
-        <p className="font-medium">
-          {getGreeting()}, {user ? user.firstName || user.fullName : "Educator"}
-          ! 👋
-        </p>
-        {user ? (
-          <UserButton />
+        {isLoaded ? (
+          <>
+            <p className="font-medium">
+              {getGreeting()},{" "}
+              {user ? user.firstName || user.fullName : "Educator"}! 👋
+            </p>
+            {user ? (
+              <UserButton />
+            ) : (
+              <img className="max-w-8" src={assets.profile_img} alt="profile" />
+            )}
+          </>
         ) : (
-          <img className="max-w-8" src={assets.profile_img} alt="profile" />
+          <div className="flex items-center gap-5">
+            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
         )}
       </div>
     </div>
