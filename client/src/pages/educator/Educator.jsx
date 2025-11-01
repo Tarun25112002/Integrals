@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/educator/Navbar";
 import Footer from "../../components/educator/Footer";
 import Sidebar from "../../components/educator/Sidebar";
@@ -11,6 +11,28 @@ const Educator = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Optimize mobile UX: lock body scroll and allow ESC to close
+  useEffect(() => {
+    const mqLarge = window.matchMedia("(min-width: 1024px)");
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setIsSidebarOpen(false);
+    };
+
+    // Lock body scroll only on mobile/tablet when sidebar is open
+    if (isSidebarOpen && !mqLarge.matches) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-default">
       {/* Navbar */}
@@ -21,7 +43,7 @@ const Educator = () => {
         {/* Overlay for mobile - only show on small screens when sidebar is open */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            className="fixed inset-0 bg-black/20 z-10 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -31,7 +53,10 @@ const Educator = () => {
         <aside
           className={`transition-transform duration-300 ease-in-out ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } fixed top-0 bottom-0 lg:relative lg:translate-x-0 z-50 w-64 lg:w-auto`}
+          } fixed top-0 bottom-0 left-0 lg:relative lg:translate-x-0 z-50 w-64 lg:w-auto`}
+          role="dialog"
+          aria-label="Educator sidebar"
+          aria-modal="true"
         >
           <Sidebar
             isOpen={isSidebarOpen}
