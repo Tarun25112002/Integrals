@@ -1,19 +1,54 @@
 import { Outlet } from "react-router-dom";
+import { useState } from "react";
 import Navbar from "../../components/educator/Navbar";
-import Footer from "../../components/student/Footer";
+import Footer from "../../components/educator/Footer";
 import Sidebar from "../../components/educator/Sidebar";
 
 const Educator = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
-    <div className="flex flex-col h-screen">
-      <Navbar />
+    <div className="flex flex-col min-h-screen bg-white text-default">
+      {/* Navbar */}
+      <Navbar toggleSidebar={toggleSidebar} />
+
+      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 overflow-auto bg-gradient-to-b from-sky-50/30 to-white">
-          <Outlet />
-        </div>
+        {/* Sidebar */}
+        <aside
+          className={`transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } fixed lg:relative lg:translate-x-0 z-40 h-full`}
+        >
+          <Sidebar
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        </aside>
+
+        {/* Overlay for mobile */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
       </div>
-      
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
