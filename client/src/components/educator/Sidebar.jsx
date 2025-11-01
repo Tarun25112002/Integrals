@@ -6,7 +6,6 @@ import { AppContext } from "../../context/AppContext";
 const Sidebar = () => {
   const { isEducator } = useContext(AppContext);
 
-
   const menuItems = useMemo(
     () => [
       {
@@ -41,11 +40,10 @@ const Sidebar = () => {
 
   return (
     <nav
-      className="md:w-64 w-16 border-r border-blue-200 py-6 flex flex-col gap-3 bg-blue-50/50 h-full overflow-y-auto min-h-screen"
+      className="md:w-64 w-16 border-r border-blue-200 py-6 flex flex-col gap-3 bg-blue-50/50 h-full overflow-y-auto"
       aria-label="Educator navigation menu"
       role="navigation"
     >
-     
       <ul className="flex flex-col gap-2" role="menu">
         {menuItems.map((item) => (
           <li key={item.path} role="none">
@@ -83,7 +81,6 @@ const Sidebar = () => {
         ))}
       </ul>
 
-     
       <div className="mt-auto px-4 py-3 mx-2">
         <div className="hidden md:block text-xs text-gray-500 space-y-1">
           <p className="font-semibold text-gray-700">Educator Portal</p>
