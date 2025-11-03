@@ -142,7 +142,7 @@ const AddCourse = () => {
 
   return (
     <div className="max-w-5xl mx-auto pb-8">
-      {/* Header */}
+      
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900 mb-1">
           Create New Course
@@ -153,7 +153,7 @@ const AddCourse = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
+        
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Basic Information
@@ -283,7 +283,7 @@ const AddCourse = () => {
           </div>
         </div>
 
-        {/* Course Content */}
+        
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -377,7 +377,7 @@ const AddCourse = () => {
           )}
         </div>
 
-        {/* Submit Button */}
+       
         <div className="flex justify-end gap-3">
           <button
             type="button"
@@ -395,7 +395,7 @@ const AddCourse = () => {
         </div>
       </form>
 
-      {/* Lecture Popup */}
+      
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
