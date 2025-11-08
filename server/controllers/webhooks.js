@@ -2,7 +2,7 @@ import { Webhook } from "svix";
 import User from "../models/User.js";
 import "dotenv/config";
 
-const clerkWebhookSecret = async (req, res) => {
+export const clerkWebhooks = async (req, res) => {
   try {
     const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
@@ -19,36 +19,39 @@ const clerkWebhookSecret = async (req, res) => {
         const userData = {
           _id: data.id,
           email: data.email_addresses[0].email_address,
-          name: `${data.first_name} ${data.last_name}`,
+          name: data.first_name+" "+data.last_name,
           imageUrl: data.image_url,
         };
 
         await User.create(userData);
-        return res.status(200).json({ success: true });
+        res.json({})
+        break;
       }
 
       case "user.updated": {
         const userData = {
           email: data.email_addresses[0].email_address,
-          name: `${data.first_name} ${data.last_name}`,
+          name: data.first_name + " " + data.last_name,
           imageUrl: data.image_url,
         };
 
         await User.findByIdAndUpdate(data.id, userData);
-        return res.status(200).json({ success: true });
+       res.json({})
+        break;
       }
 
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-        return res.status(200).json({ success: true });
+        res.json({});
+        break;
       }
 
       default:
-        return res.status(200).json({ message: "Unhandled event" });
+        break;
     }
   } catch (e) {
-    console.log(e);
-    return res.status(400).json({ error: "Invalid request" });
+    
+    res.json({sucess:false, error: e.message});
   }
 };
 

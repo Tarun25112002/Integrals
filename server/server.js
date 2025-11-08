@@ -2,8 +2,7 @@ import express from "express";
 import connectDB from "./configs/mongodb.js";
 import cors from "cors";
 import "dotenv/config";
-import clerkWebhookSecret from "./controllers/webhooks.js";
-import { connect } from "mongoose";
+import { clerkWebhooks } from "./controllers/webhooks.js";
 const app = express();
 app.use(cors());
 await connectDB();
@@ -11,11 +10,7 @@ const PORT = process.env.PORT || 5000;
 app.get('/', (req,res)=>{
     res.send("API Working")
 })
-app.post(
-  "/api/webhook",
-  express.raw({ type: "application/json" }),
-  clerkWebhookSecret
-);
+app.post('/clerk',express.json(),clerkWebhooks)
 
 
 app.listen(PORT, () => {
