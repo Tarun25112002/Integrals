@@ -11,7 +11,12 @@ const PORT = process.env.PORT || 5000;
 app.get('/', (req,res)=>{
     res.send("API Working")
 })
-app.post('/clerk', express.json(), clerkWebhookSecret)
+app.post(
+  "/api/webhook",
+  express.raw({ type: "application/json" }),
+  clerkWebhookSecret
+);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
