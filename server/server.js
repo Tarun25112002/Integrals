@@ -2,7 +2,7 @@ import express from "express";
 import connectDB from "./configs/mongodb.js";
 import cors from "cors";
 import "dotenv/config";
-import { clerkMiddleware } from "@clerk/clerk-sdk-node";
+import { clerkMiddleware } from "@clerk/express";
 import educatorRouter from "./routes/educatorRoutes.js";
 import { clerkWebhooks } from "./controllers/webhooks.js";
 const app = express();
