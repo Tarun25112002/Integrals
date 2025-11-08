@@ -55,4 +55,4 @@ export const clerkWebhooks = async (req, res) => {
   }
 };
 
-export default clerkWebhookSecret;
+
