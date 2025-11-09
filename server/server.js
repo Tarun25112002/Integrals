@@ -5,10 +5,12 @@ import "dotenv/config";
 import { clerkMiddleware } from "@clerk/express";
 import educatorRouter from "./routes/educatorRoutes.js";
 import { clerkWebhooks } from "./controllers/webhooks.js";
+import connectCloudinary from "./configs/cloudinary.js";
 const app = express();
 app.use(cors());
 app.use(clerkMiddleware());
 await connectDB();
+await connectCloudinary();
 const PORT = process.env.PORT || 5000;
 app.get('/', (req,res)=>{
     res.send("API Working")
