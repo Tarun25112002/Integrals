@@ -6,6 +6,8 @@ import { clerkMiddleware } from "@clerk/express";
 import educatorRouter from "./routes/educatorRoutes.js";
 import { clerkWebhooks } from "./controllers/webhooks.js";
 import "./configs/cloudinary.js"; // ← Just import to run the config (no await, no function call)
+import courseRouter from "./routes/courseRoutes.js";
+
 
 const app = express();
 app.use(cors());
@@ -19,6 +21,7 @@ app.get("/", (req, res) => {
 });
 app.post("/clerk", express.json(), clerkWebhooks);
 app.use("/api/educator", express.json(), educatorRouter);
+app.use("/api/course", express.json(), courseRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
