@@ -31,3 +31,13 @@ res.json({success:true, message:'Course Added Successfully'})
 res.json({success:false, message: error.message})
   }
 }
+
+export const getEducatorCoursses = async(req , res)=>{
+  try {
+    const educator = req.auth.userId;
+    const courses = await Course.find({ educator });
+    res.json({ success: true, courses });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+}
