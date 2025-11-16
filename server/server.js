@@ -9,22 +9,28 @@ import "./configs/cloudinary.js"; // ← Just import to run the config (no await
 import courseRouter from "./routes/courseRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 
-
 const app = express();
 app.use(cors());
-app.use(clerkMiddleware());
 await connectDB();
 // Remove this line: await connectCloudinary();
 
 const PORT = process.env.PORT || 5000;
+
+// Webhook endpoints (must be BEFORE clerkMiddleware to avoid authentication issues)
+app.post("/clerk", express.json(), clerkWebhooks);
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
+
+// Apply Clerk middleware after webhook routes
+app.use(clerkMiddleware());
+
 app.get("/", (req, res) => {
   res.send("API Working");
 });
-app.post("/clerk", express.json(), clerkWebhooks);
+
+// API routes
 app.use("/api/educator", express.json(), educatorRouter);
 app.use("/api/course", express.json(), courseRouter);
-app.use('/api/user', express.json(), userRouter);
-app.use('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
+app.use("/api/user", express.json(), userRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
