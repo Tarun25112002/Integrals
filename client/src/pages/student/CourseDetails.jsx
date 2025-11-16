@@ -336,7 +336,6 @@ const CourseDetails = () => {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       onClick={() => {
-                        // Find first preview lecture
                         const previewLecture = courseData.courseContent
                           .flatMap((chapter) => chapter.chapterContent)
                           .find((lecture) => lecture.isPreviewFree);

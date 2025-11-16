@@ -11,7 +11,6 @@ const Educator = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Optimize mobile UX: lock body scroll and allow ESC to close
   useEffect(() => {
     const mqLarge = window.matchMedia("(min-width: 1024px)");
 
@@ -19,7 +18,6 @@ const Educator = () => {
       if (e.key === "Escape") setIsSidebarOpen(false);
     };
 
-    // Lock body scroll only on mobile/tablet when sidebar is open
     if (isSidebarOpen && !mqLarge.matches) {
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);

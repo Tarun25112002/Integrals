@@ -88,7 +88,6 @@ export const stripeWebhooks = async (req, res) => {
         console.log(`Payment Status: ${session.payment_status}`);
         console.log(`Session Metadata:`, session.metadata);
 
-        // Only process if payment status is paid
         if (session.payment_status !== "paid") {
           console.log(
             `Payment not completed for session ${session.id}, status: ${session.payment_status}`
@@ -120,7 +119,6 @@ export const stripeWebhooks = async (req, res) => {
 
         console.log(`Current purchase status: ${purchaseData.status}`);
 
-        // Check if already processed
         if (purchaseData.status === "completed") {
           console.log(`Purchase ${purchaseId} already completed`);
           return res
@@ -143,14 +141,12 @@ export const stripeWebhooks = async (req, res) => {
             .json({ received: true, error: "User or Course not found" });
         }
 
-        // Add user to course enrolled students if not already enrolled
         if (!courseData.enrolledStudents.includes(userData._id)) {
           courseData.enrolledStudents.push(userData._id);
           await courseData.save();
           console.log(`Added user ${userData._id} to course ${courseData._id}`);
         }
 
-        // Add course to user enrolled courses if not already enrolled
         if (!userData.enrolledCourses.includes(courseData._id)) {
           userData.enrolledCourses.push(courseData._id);
           await userData.save();
@@ -166,7 +162,6 @@ export const stripeWebhooks = async (req, res) => {
           .json({ received: true, success: true, purchaseId });
       }
       case "checkout.session.async_payment_succeeded": {
-        // Handle async payment methods (like bank transfers)
         const session = event.data.object;
         const { purchaseId } = session.metadata;
 
@@ -229,7 +224,6 @@ export const stripeWebhooks = async (req, res) => {
           .json({ received: true, message: `Unhandled event: ${event.type}` });
     }
 
-    // Fallback response if no case matches
     res.status(200).json({ received: true });
   } catch (error) {
     console.error("Error handling webhook:", error);

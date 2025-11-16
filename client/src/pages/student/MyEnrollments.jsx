@@ -26,7 +26,6 @@ const MyEnrollments = () => {
     { lectureCompleted: 5, totalLectures: 5 },
   ];
 
-  // Map courses with their progress
   const coursesWithProgress = useMemo(() => {
     return enrolledCourses.map((course, index) => {
       const progressData = progressArray[index] || {
@@ -49,16 +48,14 @@ const MyEnrollments = () => {
     });
   }, [enrolledCourses]);
 
-  // Calculate stats
   const totalCourses = coursesWithProgress.length;
   const completedCourses = coursesWithProgress.filter(
     (c) => c.progress === 100
   ).length;
   const inProgressCourses = coursesWithProgress.filter(
     (c) => c.progress > 0 && c.progress < 100
-  ).length;
+    ).length;
 
-  // Filter courses
   const filteredCourses = useMemo(() => {
     if (filter === "completed") {
       return coursesWithProgress.filter((course) => course.progress === 100);
@@ -445,7 +442,6 @@ const MyEnrollments = () => {
               </div>
             </>
           ) : (
-            // Empty State
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg

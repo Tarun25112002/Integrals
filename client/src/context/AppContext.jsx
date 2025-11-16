@@ -52,7 +52,6 @@ const {user} = useUser()
     return totalLectures;
   };
 
-  //Fetch all courses
   const fetchUserEnrolledCourses = async () => {
     setEnrolledCourses(dummyCourses);
   }

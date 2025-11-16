@@ -25,7 +25,6 @@ function App() {
   const smoothContentRef = useRef(null);
 
   useEffect(() => {
-    // Smooth page load animation
     const ctx = gsap.context(() => {
       gsap.fromTo(
         appRef.current,
@@ -39,7 +38,6 @@ function App() {
         }
       );
 
-      // Create ultra-smooth scrolling experience
       ScrollSmoother.create({
         wrapper: smoothWrapperRef.current,
         content: smoothContentRef.current,

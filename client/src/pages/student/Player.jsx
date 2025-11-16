@@ -14,7 +14,6 @@ const Player = () => {
   const [expandedChapters, setExpandedChapters] = useState(new Set([0]));
   const [completedLectures, setCompletedLectures] = useState(new Set());
 
-  // Rating and feedback states
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -25,7 +24,6 @@ const Player = () => {
 
   const { enrolledCourses, calculateChapterTime } = useContext(AppContext);
 
-  // Calculate progress
   const totalLectures =
     courseData?.courseContent?.reduce(
       (total, chapter) => total + (chapter.chapterContent?.length || 0),
@@ -36,7 +34,6 @@ const Player = () => {
       ? Math.round((completedLectures.size / totalLectures) * 100)
       : 0;
 
-  // Load saved progress from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`course-${courseId}-progress`);
     if (saved) {
@@ -54,7 +51,6 @@ const Player = () => {
     }
   }, [courseId]);
 
-  // Save progress to localStorage
   useEffect(() => {
     localStorage.setItem(
       `course-${courseId}-progress`,
@@ -68,7 +64,6 @@ const Player = () => {
     );
   }, [completedLectures, userRating, liked, disliked, comments, courseId]);
 
-  // Fixed useEffect with getCourseData moved inside
   useEffect(() => {
     if (enrolledCourses && enrolledCourses.length > 0) {
       const getCourseData = () => {
