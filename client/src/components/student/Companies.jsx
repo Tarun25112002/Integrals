@@ -3,60 +3,72 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 
 const companies = [
-  { name: "Microsoft", logo: assets.microsoft_logo, url: "https://www.microsoft.com" },
-  { name: "Walmart", logo: assets.walmart_logo, url: "https://www.walmart.com" },
-  { name: "Accenture", logo: assets.accenture_logo, url: "https://www.accenture.com" },
+  {
+    name: "Microsoft",
+    logo: assets.microsoft_logo,
+    url: "https://www.microsoft.com",
+  },
+  {
+    name: "Walmart",
+    logo: assets.walmart_logo,
+    url: "https://www.walmart.com",
+  },
+  {
+    name: "Accenture",
+    logo: assets.accenture_logo,
+    url: "https://www.accenture.com",
+  },
   { name: "Adobe", logo: assets.adobe_logo, url: "https://www.adobe.com" },
   { name: "PayPal", logo: assets.paypal_logo, url: "https://www.paypal.com" },
-  { 
-    name: "Google", 
-    logo: "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png", 
-    url: "https://www.google.com" 
+  {
+    name: "Google",
+    logo: "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png",
+    url: "https://www.google.com",
   },
-  { 
-    name: "Amazon", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg", 
-    url: "https://www.amazon.com" 
+  {
+    name: "Amazon",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+    url: "https://www.amazon.com",
   },
-  { 
-    name: "Meta", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg", 
-    url: "https://www.meta.com" 
+  {
+    name: "Meta",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/7/7b/Meta_Platforms_Inc._logo.svg",
+    url: "https://www.meta.com",
   },
-  { 
-    name: "Apple", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg", 
-    url: "https://www.apple.com" 
+  {
+    name: "Apple",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+    url: "https://www.apple.com",
   },
-  { 
-    name: "Netflix", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg", 
-    url: "https://www.netflix.com" 
+  {
+    name: "Netflix",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+    url: "https://www.netflix.com",
   },
-  { 
-    name: "Tesla", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Tesla_Motors.svg", 
-    url: "https://www.tesla.com" 
+  {
+    name: "Tesla",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Tesla_Motors.svg",
+    url: "https://www.tesla.com",
   },
-  { 
-    name: "IBM", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg", 
-    url: "https://www.ibm.com" 
+  {
+    name: "IBM",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg",
+    url: "https://www.ibm.com",
   },
-  { 
-    name: "Oracle", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg", 
-    url: "https://www.oracle.com" 
+  {
+    name: "Oracle",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg",
+    url: "https://www.oracle.com",
   },
-  { 
-    name: "Salesforce", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg", 
-    url: "https://www.salesforce.com" 
+  {
+    name: "Salesforce",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/f/f9/Salesforce.com_logo.svg",
+    url: "https://www.salesforce.com",
   },
-  { 
-    name: "Jane Street", 
-    logo: "https://upload.wikimedia.org/wikipedia/commons/7/7a/Jane_Street_logo.svg", 
-    url: "https://www.janestreet.com" 
+  {
+    name: "Jane Street",
+    logo: "https://upload.wikimedia.org/wikipedia/commons/7/7a/Jane_Street_logo.svg",
+    url: "https://www.janestreet.com",
   },
 ];
 
@@ -110,15 +122,15 @@ const Companies = () => {
               <img
                 src={company.logo}
                 alt={company.name}
-                className="h-6 sm:h-7 md:h-8 cursor-pointer object-contain"
+                className="h-3 sm:h-4 md:h-5 cursor-pointer object-contain"
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'inline-block';
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "inline-block";
                 }}
               />
-              <span 
+              <span
                 className="text-gray-600 font-semibold text-sm sm:text-base md:text-lg whitespace-nowrap"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               >
                 {company.name}
               </span>
