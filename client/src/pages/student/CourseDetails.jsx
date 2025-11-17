@@ -24,7 +24,8 @@ const CourseDetails = () => {
     calculateChapterTime,
     currency,
     backendUrl,
-    userData
+    userData,
+    getToken
   } = useContext(AppContext);
   const fetchCourseData = async () => {
    try {
@@ -41,6 +42,36 @@ const CourseDetails = () => {
    }
   };
 
+  const enrollCourse = async () => {
+    try {
+      if(!userData){
+        return toast.warn("Please login to enroll the course");
+      }
+      if (isAlreadyEnrolled) {
+        return toast.warn("You are already enrolled in this course");
+      }
+      const token = await getToken();
+      const { data } = await axios.post(
+        backendUrl + "/api/user/purchase",
+        {
+          courseId: courseData._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (data.success) {
+        const {session_url} = data;
+        window.location.replace(session_url);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  }
   const toggleChapter = (chapterIndex) => {
     const newExpandedChapters = new Set(expandedChapters);
     if (newExpandedChapters.has(chapterIndex)) {
@@ -56,6 +87,11 @@ const CourseDetails = () => {
       fetchCourseData();
     
   }, []);
+  useEffect(() => {
+   if(userData && courseData){
+     setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id));
+   }
+  }, [userData, courseData]);
   return courseData ? (
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 md:pt-30 pt-20 text-left">
@@ -514,7 +550,7 @@ const CourseDetails = () => {
             </div>
 
             {/* Enroll Button */}
-            <button className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+            <button onClick={enrollCourse} className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
               {isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}
             </button>
 
