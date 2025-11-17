@@ -3,13 +3,32 @@ import { Link, useLocation } from "react-router-dom";
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react";
 import { AppContext } from "../../context/AppContext";
 import { useContext } from "react";
-
+import { toast } from "react-toastify";
+import axios from "axios";
 const Navbar = () => {
   const location = useLocation();
   const isCourseListpage = location.pathname.includes("/course-list");
   const { openSignIn } = useClerk();
-  const { navigate, isEducator } = useContext(AppContext);
+  const { navigate, isEducator, backendUrl, setIsEducator, getToken } = useContext(AppContext);
   const { user } = useUser();
+  const becomeEducator = async () => {
+    try {
+      if(isEducator){
+        navigate("/educator")
+        return
+      }
+      const token = await getToken();
+      const {data} = await axios.get(backendUrl + "/api/educator/update-role", {headers: {Authorization: `Bearer ${token}`}})
+      if(data.success){
+        setIsEducator(true)
+      }
+      else{
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
   return (
     <div
       className={`flex justify-between items-center px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 ${
@@ -28,9 +47,7 @@ const Navbar = () => {
             <>
               <button
                 className="cursor-pointer"
-                onClick={() => {
-                  navigate("/educator");
-                }}
+                onClick={becomeEducator}
               >
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>{" "}
@@ -55,9 +72,7 @@ const Navbar = () => {
             <>
               <button
                 className="cursor-pointer"
-                onClick={() => {
-                  navigate("/educator");
-                }}
+                onClick={becomeEducator}
               >
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>{" "}
