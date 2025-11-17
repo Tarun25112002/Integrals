@@ -1,14 +1,27 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/student/Footer";
 import { dummyEducatorData } from "../../assets/assets";
 
-const MyEnrollments = () => {
-  const { enrolledCourses, calculateCourseDuration, calculateNoOfLectures } =
-    useContext(AppContext);
+function MyEnrollments() {
+  const {
+    enrolledCourses,
+    calculateCourseDuration,
+    calculateNoOfLectures,
+    userData,
+    fetchUserEnrolledCourses, // Add this to destructuring
+  } = useContext(AppContext);
+
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // all, in-progress, completed
+
+  // Move useEffect inside the component
+  useEffect(() => {
+    if (userData && fetchUserEnrolledCourses) {
+      fetchUserEnrolledCourses();
+    }
+  }, [userData, fetchUserEnrolledCourses]);
 
   const progressArray = [
     { lectureCompleted: 1, totalLectures: 5 },
@@ -54,7 +67,7 @@ const MyEnrollments = () => {
   ).length;
   const inProgressCourses = coursesWithProgress.filter(
     (c) => c.progress > 0 && c.progress < 100
-    ).length;
+  ).length;
 
   const filteredCourses = useMemo(() => {
     if (filter === "completed") {
@@ -274,10 +287,7 @@ const MyEnrollments = () => {
                                   {calculateCourseDuration(course)}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2">
-                            
-                               
-                              </div>
+                              <div className="flex items-center gap-2"></div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
@@ -498,6 +508,6 @@ const MyEnrollments = () => {
       <Footer />
     </>
   );
-};
+}
 
 export default MyEnrollments;
