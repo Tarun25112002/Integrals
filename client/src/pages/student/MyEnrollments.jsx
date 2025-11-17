@@ -2,15 +2,22 @@ import { useContext, useMemo, useState, useEffect } from "react";
 import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/student/Footer";
-import { dummyEducatorData } from "../../assets/assets";
+import { toast } from "react-toastify";
+
 
 function MyEnrollments() {
   const {
+    
     enrolledCourses,
     calculateCourseDuration,
     calculateNoOfLectures,
     userData,
-    fetchUserEnrolledCourses, // Add this to destructuring
+    fetchUserEnrolledCourses,
+    backendUrl,
+    getToken,
+    setProgressArray
+
+     
   } = useContext(AppContext);
 
   const navigate = useNavigate();
@@ -24,19 +31,7 @@ function MyEnrollments() {
   }, [userData, fetchUserEnrolledCourses]);
 
   const progressArray = [
-    { lectureCompleted: 1, totalLectures: 5 },
-    { lectureCompleted: 3, totalLectures: 6 },
-    { lectureCompleted: 4, totalLectures: 4 },
-    { lectureCompleted: 0, totalLectures: 3 },
-    { lectureCompleted: 5, totalLectures: 7 },
-    { lectureCompleted: 6, totalLectures: 8 },
-    { lectureCompleted: 2, totalLectures: 6 },
-    { lectureCompleted: 4, totalLectures: 10 },
-    { lectureCompleted: 3, totalLectures: 5 },
-    { lectureCompleted: 7, totalLectures: 7 },
-    { lectureCompleted: 1, totalLectures: 4 },
-    { lectureCompleted: 0, totalLectures: 2 },
-    { lectureCompleted: 5, totalLectures: 5 },
+  
   ];
 
   const coursesWithProgress = useMemo(() => {
@@ -50,7 +45,33 @@ function MyEnrollments() {
         totalLectures === 0
           ? 0
           : Math.floor((lectureCompleted / totalLectures) * 100);
-
+const getCourseProgress = async () => {
+  try {
+    const token = await getToken();
+    const tempProgressArray = await Promise.all(
+      enrolledCourses.map(async (course, index) => {
+        const { data } = await axios.get(
+          backendUrl + "/api/user/get-course-progress",{courseId: course._id},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+           
+          }
+        );
+         let totalLectures = calculateNoOfLectures(course);
+         const lectureCompleted = data.progressData
+           ? data.progressData.lectureCompleted.length
+           : 0;
+         return { totalLectures, lectureCompleted };
+       
+      })
+    )
+   setProgressArray(tempProgressArray);
+  } catch (error) {
+    toast.error(error.message);
+  }
+}
       return {
         ...course,
         progress,
