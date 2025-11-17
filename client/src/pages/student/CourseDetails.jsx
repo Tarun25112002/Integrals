@@ -7,6 +7,8 @@ import humanizeDuration from "humanize-duration";
 import Footer from "../../components/student/Footer";
 import Youtube from "react-youtube";
 import Rating from "../../components/student/Rating";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -15,15 +17,28 @@ const CourseDetails = () => {
   const [playerData, setPlayerData] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState(new Set());
   const {
-    allCourses,
+    
     calculateRating,
     calculateNoOfLectures,
     calculateCourseDuration,
     calculateChapterTime,
+    currency,
+    backendUrl,
+    userData
   } = useContext(AppContext);
   const fetchCourseData = async () => {
-    const findCourse = allCourses.find((course) => course._id === id);
-    setCourseData(findCourse);
+   try {
+    const { data } = await axios.get(backendUrl + `/api/course/` + id);
+    if(data.success){
+      setCourseData(data.courseData);
+    }
+    else{
+      toast.error(data.message)
+    }
+
+   } catch (error) {
+    toast.error(error.message)
+   }
   };
 
   const toggleChapter = (chapterIndex) => {
@@ -37,10 +52,10 @@ const CourseDetails = () => {
   };
 
   useEffect(() => {
-    if (allCourses.length > 0) {
+    
       fetchCourseData();
-    }
-  }, [allCourses, id]);
+    
+  }, []);
   return courseData ? (
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 md:pt-30 pt-20 text-left">
@@ -94,7 +109,7 @@ const CourseDetails = () => {
             <div className="flex-1">
               <p className="text-sm text-gray-500">Instructor</p>
               <p className="font-semibold text-gray-800 mb-2">
-                Tarun Kumar Jha
+                {courseData.educator.name}
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Experienced software engineer and educator with 8+ years in
