@@ -31,27 +31,24 @@ const [userData, setUserData] = useState(null);
     }
   };
   const fetchUserData = async () => {
-    if(user.publicMetadata.role === "educator"){
-      setIsEducator(true)
+    if (user?.publicMetadata?.role === "educator") {
+      setIsEducator(true);
     }
     try {
       const token = await getToken();
-     const {data} = await axios
-        .get(backendUrl + "/api/user/data", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-      if(data.success){
-        setUserData(data.user)
-      }
-      else{
-        toast.error(data.message)
+      const { data } = await axios.get(backendUrl + "/api/user/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (data.success) {
+        // Support both { user } and { data } server shapes
+        setUserData(data.user ?? data.data);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
-  }
+  };
 
   const calculateRating = (course) => {
     if (course.courseRatings.length === 0) {

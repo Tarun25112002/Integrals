@@ -44,34 +44,34 @@ function CourseDetails() {
 
   const enrollCourse = async () => {
     try {
-      if(!userData){
+      if (!userData) {
         return toast.warn("Please login to enroll the course");
       }
       if (isAlreadyEnrolled) {
         return toast.warn("You are already enrolled in this course");
       }
+
       const token = await getToken();
       const { data } = await axios.post(
         backendUrl + "/api/user/purchase",
-        {
-          courseId: courseData._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { courseId: courseData._id },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+
       if (data.success) {
-        const {session_url} = data;
-        window.location.replace(session_url);
+        const redirectUrl = data.url || data.session_url;
+        if (redirectUrl) {
+          window.location.replace(redirectUrl);
+        } else {
+          toast.error("Checkout URL missing");
+        }
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
     }
-  }
+  };
   const toggleChapter = (chapterIndex) => {
     const newExpandedChapters = new Set(expandedChapters);
     if (newExpandedChapters.has(chapterIndex)) {
