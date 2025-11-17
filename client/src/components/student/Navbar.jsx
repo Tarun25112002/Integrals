@@ -9,26 +9,48 @@ const Navbar = () => {
   const location = useLocation();
   const isCourseListpage = location.pathname.includes("/course-list");
   const { openSignIn } = useClerk();
-  const { navigate, isEducator, backendUrl, setIsEducator, getToken } = useContext(AppContext);
+  const { navigate, isEducator, backendUrl, setIsEducator, getToken } =
+    useContext(AppContext);
   const { user } = useUser();
   const becomeEducator = async () => {
     try {
-      if(isEducator){
-        navigate("/educator")
-        return
+      if (isEducator) {
+        navigate("/educator");
+        return;
       }
+
       const token = await getToken();
-      const {data} = await axios.get(backendUrl + "/api/educator/update-role", {headers: {Authorization: `Bearer ${token}`}})
-      if(data.success){
-        setIsEducator(true)
-      }
-      else{
-        toast.error(data.message)
+
+      toast.info("Updating your role to educator...");
+
+      const { data } = await axios.get(
+        backendUrl + "/api/educator/update-role",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.message === "Role updated to educator successfully") {
+        setIsEducator(true);
+        toast.success("You are now an educator!");
+
+        // Reload user to get updated metadata
+        await user.reload();
+
+        // Navigate to educator dashboard
+        setTimeout(() => {
+          navigate("/educator");
+        }, 1000);
+      } else {
+        toast.error(data.message || "Failed to update role");
       }
     } catch (error) {
-      toast.error(error.message)
+      console.error("Error becoming educator:", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to update role"
+      );
     }
-  }
+  };
   return (
     <div
       className={`flex justify-between items-center px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 ${
@@ -45,10 +67,7 @@ const Navbar = () => {
         <div className="flex items-center gap-5">
           {user && (
             <>
-              <button
-                className="cursor-pointer"
-                onClick={becomeEducator}
-              >
+              <button className="cursor-pointer" onClick={becomeEducator}>
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>{" "}
               |<Link to="/my-enrollments">My Enrollments</Link>
@@ -70,10 +89,7 @@ const Navbar = () => {
         <div className="flex items-center gap-1 sm:gap-2 max-sm:text-xs">
           {user && (
             <>
-              <button
-                className="cursor-pointer"
-                onClick={becomeEducator}
-              >
+              <button className="cursor-pointer" onClick={becomeEducator}>
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>{" "}
               |<Link to="/my-enrollments">My Enrollments</Link>
