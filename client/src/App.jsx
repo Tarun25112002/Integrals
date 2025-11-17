@@ -16,6 +16,7 @@ import MyCourses from "./pages/educator/MyCourses";
 import StudentsEnrolled from "./pages/educator/StudentsEnrolled";
 import Navbar from "./components/student/Navbar";
 import "quill/dist/quill.snow.css";
+import { ToastContainer } from "react-toastify";
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
     <div ref={smoothWrapperRef} id="smooth-wrapper" style={{ overflow: 'hidden' }}>
       <div ref={smoothContentRef} id="smooth-content">
         <div ref={appRef} className="text-default min-h-screen bg-white text-gray-900">
+         <ToastContainer />
           {!isEducatorRoute && <Navbar />}
           <Routes>
             <Route path="/" element={<Home />} />
