@@ -6,7 +6,7 @@ export const getAllCourse = async (req, res) => {
       .select("-courseContent -enrolledStudents")
       .populate({
         path: "educator",
-        select: "fullName imageUrl",
+        select: "name imageUrl",
       });
 
     res.json({ success: true, courses });
@@ -21,7 +21,7 @@ export const getCourseId = async (req, res) => {
   try {
     const courseData = await Course.findById(id).populate({
       path: "educator",
-      select: "fullName imageUrl",
+      select: "name imageUrl",
     });
 
     if (!courseData) {

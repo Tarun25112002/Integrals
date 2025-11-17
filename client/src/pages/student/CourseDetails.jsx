@@ -10,7 +10,7 @@ import Rating from "../../components/student/Rating";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const CourseDetails = () => {
+function CourseDetails() {
   const { id } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
@@ -113,20 +113,17 @@ const CourseDetails = () => {
             <div className="flex items-center gap-3">
               <Rating rating={calculateRating(courseData)} size="small" />
               <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                {courseData.courseRatings.length}{" "}
-                {courseData.courseRatings.length === 1 ? "rating" : "ratings"}
+                {(Array.isArray(courseData.courseRatings) ? courseData.courseRatings.length : 0)}{" "}
+                {(Array.isArray(courseData.courseRatings) && courseData.courseRatings.length === 1) ? "rating" : "ratings"}
               </span>
             </div>
-
             {/* Divider */}
             <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
-
-            {/* Students Count */}
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-sm text-gray-600">
-                {courseData.enrolledStudents.length}{" "}
-                {courseData.enrolledStudents.length === 1
+                {(Array.isArray(courseData.enrolledStudents) ? courseData.enrolledStudents.length : 0)}{" "}
+                {(Array.isArray(courseData.enrolledStudents) && courseData.enrolledStudents.length === 1)
                   ? "student enrolled"
                   : "students enrolled"}
               </span>
@@ -145,7 +142,7 @@ const CourseDetails = () => {
             <div className="flex-1">
               <p className="text-sm text-gray-500">Instructor</p>
               <p className="font-semibold text-gray-800 mb-2">
-                {courseData.educator.name}
+                {courseData.educator?.name ?? courseData.educator?.fullName ?? "Unknown Educator"}
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Experienced software engineer and educator with 8+ years in
@@ -387,8 +384,8 @@ const CourseDetails = () => {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       onClick={() => {
-                        const previewLecture = courseData.courseContent
-                          .flatMap((chapter) => chapter.chapterContent)
+                        const previewLecture = (Array.isArray(courseData.courseContent) ? courseData.courseContent : [])
+                          .flatMap((chapter) => (Array.isArray(chapter.chapterContent) ? chapter.chapterContent : []))
                           .find((lecture) => lecture.isPreviewFree);
                         if (previewLecture) {
                           setPlayerData({
