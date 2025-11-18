@@ -24,6 +24,44 @@ const Player = () => {
 
   const { enrolledCourses, calculateChapterTime } = useContext(AppContext);
 
+  // Robust URL parsing helpers
+  const extractYouTubeId = (url) => {
+    if (!url || typeof url !== "string") return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace("www.", "");
+      if (host === "youtu.be") {
+        const id = u.pathname.split("/")[1];
+        return id || null;
+      }
+      if (host === "youtube.com" || host === "m.youtube.com") {
+        if (u.pathname === "/watch") {
+          return u.searchParams.get("v");
+        }
+        const shorts = u.pathname.match(/^\/shorts\/([^/?]+)/);
+        if (shorts) return shorts[1];
+        const embed = u.pathname.match(/^\/embed\/([^/?]+)/);
+        if (embed) return embed[1];
+      }
+      if (host.endsWith("youtube-nocookie.com")) {
+        const embed = u.pathname.match(/^\/embed\/([^/?]+)/);
+        if (embed) return embed[1];
+      }
+    } catch {
+      // if plain ID is provided
+      if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+    }
+    return null;
+  };
+
+  const getPlayerDataFromUrl = (url) => {
+    const id = extractYouTubeId(url);
+    if (id) return { playerType: "youtube", videoId: id };
+    if (typeof url === "string" && (url.endsWith(".mp4") || url.includes("cloudinary"))) {
+      return { playerType: "video", src: url };
+    }
+    return null;
+  };
   const totalLectures =
     courseData?.courseContent?.reduce(
       (total, chapter) => total + (chapter.chapterContent?.length || 0),
@@ -67,17 +105,13 @@ const Player = () => {
   useEffect(() => {
     if (enrolledCourses && enrolledCourses.length > 0) {
       const getCourseData = () => {
-        const foundCourse = enrolledCourses.find(
-          (course) => course._id === courseId
-        );
+        const foundCourse = enrolledCourses.find((course) => course._id === courseId);
         if (foundCourse) {
           setCourseData(foundCourse);
-          if (foundCourse.courseContent?.[0]?.chapterContent?.[0]?.lectureUrl) {
-            setPlayerData({
-              videoId: foundCourse.courseContent[0].chapterContent[0].lectureUrl
-                .split("/")
-                .pop(),
-            });
+          const firstLecture = foundCourse.courseContent?.[0]?.chapterContent?.[0];
+          if (firstLecture?.lectureUrl) {
+            const pd = getPlayerDataFromUrl(firstLecture.lectureUrl);
+            if (pd) setPlayerData(pd);
           }
         }
         setIsLoading(false);
@@ -122,33 +156,25 @@ const Player = () => {
               {/* Video Player */}
               <div className="bg-black rounded-xl overflow-hidden shadow-lg mb-4">
                 <div className="aspect-video">
-                  {playerData ? (
+                  {playerData?.playerType === "youtube" ? (
                     <Youtube
                       videoId={playerData.videoId}
                       opts={{
                         height: "100%",
                         width: "100%",
-                        playerVars: {
-                          autoplay: 0,
-                          modestbranding: 1,
-                          rel: 0,
-                        },
+                        playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
                       }}
                       className="w-full h-full"
                     />
+                  ) : playerData?.playerType === "video" ? (
+                    <video src={playerData.src} controls className="w-full h-full" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="text-center">
-                        <svg
-                          className="w-16 h-16 mx-auto mb-4 text-gray-400"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M8 5v14l11-7z" />
                         </svg>
-                        <p className="text-gray-400">
-                          Select a lecture to start
-                        </p>
+                        <p className="text-gray-400">Select a lecture to start</p>
                       </div>
                     </div>
                   )}
