@@ -1,7 +1,9 @@
+// imports
 import User from "../models/User.js";
 import Course from "../models/Course.js";
-import  Purchase  from "../models/Purchase.js";
+import Purchase from "../models/Purchase.js";
 import Stripe from "stripe";
+import CourseProgress from "../models/CourseProgress.js";
 export const getUserData = async (req, res) => {
   try {
     const userId = req.auth.userId;
@@ -83,14 +85,42 @@ export const updateUserCourseProgress = async (req, res) => {
   try {
     const userId = req.auth.userId;
     const { courseId, lectureId } = req.body;
-    const progressData = await CourseProgress.findOne({ userId, courseId });
-    if (progressData){
-      if(progressData.lectureCompleted.includes(lectureId)){
+
+    if (!courseId || !lectureId) {
+      return res.json({ success: false, message: "Missing courseId or lectureId" });
+    }
+
+    let progressData = await CourseProgress.findOne({ userId, courseId });
+
+    if (!progressData) {
+      progressData = await CourseProgress.create({
+        userId,
+        courseId,
+        lecturesCompleted: [lectureId],
+        completed: false,
+      });
+    } else {
+      if (progressData.lecturesCompleted.includes(lectureId)) {
         return res.json({ success: true, message: "Lecture already completed" });
       }
-    }else{
-      await CourseProgress.create({ userId, courseId, lecturesCompleted: [lectureId] }); 
+      progressData.lecturesCompleted.push(lectureId);
+      await progressData.save();
     }
+
+    // Optionally mark completed if all lectures are done
+    const course = await Course.findById(courseId);
+    let totalLectures = 0;
+    if (course?.courseContent?.length) {
+      totalLectures = course.courseContent.reduce(
+        (sum, chapter) => sum + (chapter?.chapterContent?.length || 0),
+        0
+      );
+    }
+    if (totalLectures > 0 && progressData.lecturesCompleted.length >= totalLectures) {
+      progressData.completed = true;
+      await progressData.save();
+    }
+
     res.json({ success: true, message: "Progress updated successfully" });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -100,14 +130,21 @@ export const updateUserCourseProgress = async (req, res) => {
 export const getUserCourseProgress = async (req, res) => {
   try {
     const userId = req.auth.userId;
-    const { courseId, lectureId } = req.body;
-    const progressData = await CourseProgress.findOne({ userId, courseId });
-    res.json({ success: true, data: progressData });
-  }catch (error) {
-    res.json({ success: false, message: error.message });
-  }
+    const { courseId } = req.body;
+
+    if (!courseId) {
+      return res.json({ success: false, message: "Missing courseId" });
     }
 
+    const progressData = await CourseProgress.findOne({ userId, courseId });
+    res.json({
+      success: true,
+      data: progressData || { lecturesCompleted: [], completed: false },
+    });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+}
     export const addUserRating = async (req, res) => {
      const userId = req.auth.userId;
       const { courseId, rating} = req.body;
