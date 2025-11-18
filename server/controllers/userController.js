@@ -63,9 +63,10 @@ export const purchaseCourse = async (req, res) => {
       },
     ];
 
+    const frontendUrl = origin || process.env.FRONTEND_URL;
     const session = await stripeInstance.checkout.sessions.create({
-      success_url: `${origin}/loading/my-enrollments?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/`,
+      success_url: `${frontendUrl}/loading/my-enrollments?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl || origin || ""}/`,
       line_items,
       mode: "payment",
       customer_email: userData.email,
