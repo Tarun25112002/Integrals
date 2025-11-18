@@ -10,11 +10,19 @@ export const updateRoleToEducator = async (req, res) => {
     await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: { role: "educator" },
     });
-    res.json({ message: "Role updated to educator successfully" });
+    res.json({
+      success: true,
+      message: "Role updated to educator successfully",
+    });
   } catch (error) {
-    res.json({ message: "Error updating role", error: error.message });
+    res.json({
+      success: false,
+      message: "Error updating role",
+      error: error.message,
+    });
   }
 };
+
 export const addCourse = async (req, res) => {
   try {
     const { courseData } = req.body;
@@ -30,7 +38,7 @@ export const addCourse = async (req, res) => {
       return res.json({ success: false, message: "Thumbnail Not Attached" });
     }
 
-    const parsedCourseData = await JSON.parse(courseData);
+    const parsedCourseData = JSON.parse(courseData);
     parsedCourseData.educator = educatorId;
 
     // Upload image to Cloudinary with explicit config
@@ -130,5 +138,80 @@ export const getEnrolledStudents = async (req, res) => {
     res.json({ success: true, enrolledStudents });
   } catch (error) {
     res.json({ success: false, message: error.message });
+  }
+};
+
+export const updateCourse = async (req, res) => {
+  try {
+    const educatorId = req.auth.userId;
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.json({ success: false, message: "Course not found" });
+    }
+
+    // Fix: Convert both to strings for comparison
+    if (course.educator.toString() !== educatorId.toString()) {
+      return res.json({ success: false, message: "Unauthorized Access" });
+    }
+
+    let parsedCourseData = {};
+    if (req.body?.courseData) {
+      try {
+        parsedCourseData = JSON.parse(req.body.courseData);
+      } catch (e) {
+        return res.json({ success: false, message: "Invalid course data" });
+      }
+    } else {
+      parsedCourseData = req.body || {};
+    }
+
+    const updates = {};
+
+    if (typeof parsedCourseData.courseTitle === "string") {
+      updates.courseTitle = parsedCourseData.courseTitle.trim();
+    }
+    if (typeof parsedCourseData.courseDescription === "string") {
+      updates.courseDescription = parsedCourseData.courseDescription;
+    }
+    if (parsedCourseData.coursePrice !== undefined) {
+      const price = Number(parsedCourseData.coursePrice);
+      if (isNaN(price) || price <= 0) {
+        return res.json({ success: false, message: "Invalid price" });
+      }
+      updates.coursePrice = price;
+    }
+    if (parsedCourseData.discount !== undefined) {
+      const discount = Math.min(
+        Math.max(Number(parsedCourseData.discount) || 0, 0),
+        100
+      );
+      updates.discount = discount;
+    }
+    if (Array.isArray(parsedCourseData.courseContent)) {
+      updates.courseContent = parsedCourseData.courseContent;
+    }
+    if (parsedCourseData.isPublished !== undefined) {
+      updates.isPublished = Boolean(parsedCourseData.isPublished);
+    }
+
+    if (req.file) {
+      const imageUpload = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "image",
+        folder: "course-thumbnails",
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+        cloud_name: process.env.CLOUDINARY_NAME,
+      });
+      updates.courseThumbnail = imageUpload.secure_url;
+    }
+
+    Object.assign(course, updates);
+    await course.save();
+
+    return res.json({ success: true, course });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
   }
 };

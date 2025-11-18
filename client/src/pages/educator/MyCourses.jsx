@@ -8,6 +8,8 @@ import { toast } from "react-toastify";
 const MyCourses = () => {
   const { currency, backendUrl, getToken } = useContext(AppContext);
   const [courses, setCourses] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState(null);
 
   const fetchEducatorCourses = async () => {
     try {
@@ -25,11 +27,35 @@ const MyCourses = () => {
     }
   };
 
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      const token = await getToken();
+      const { data } = await axios.delete(
+        `${backendUrl}/api/educator/course/${courseToDelete._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (data.success) {
+        toast.success("Course deleted successfully");
+        setCourses(courses.filter((c) => c._id !== courseToDelete._id));
+        setDeleteModalOpen(false);
+        setCourseToDelete(null);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchEducatorCourses();
   }, []);
 
-  // Fix: only gate on courses, remove incorrect allCourses check
   if (!courses) {
     return <Loading />;
   }
@@ -38,19 +64,57 @@ const MyCourses = () => {
     (sum, course) =>
       sum +
       Math.floor(
-        course.enrolledStudents.length *
+        (Array.isArray(course.enrolledStudents)
+          ? course.enrolledStudents.length
+          : 0) *
           (course.coursePrice - (course.discount * course.coursePrice) / 100)
       ),
     0
   );
 
   const totalStudents = courses.reduce(
-    (sum, course) => sum + course.enrolledStudents.length,
+    (sum, course) =>
+      sum +
+      (Array.isArray(course.enrolledStudents)
+        ? course.enrolledStudents.length
+        : 0),
     0
   );
 
   return (
     <div className="max-w-7xl mx-auto pb-8">
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Course
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete "{courseToDelete?.courseTitle}"?
+              This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setCourseToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCourse}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-1">
@@ -62,7 +126,7 @@ const MyCourses = () => {
         </div>
         <Link
           to="/educator/add-course"
-          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
         >
           <svg
             className="w-5 h-5 mr-2"
@@ -128,8 +192,11 @@ const MyCourses = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {courses.map((course) => {
+                  const enrolledCount = Array.isArray(course.enrolledStudents)
+                    ? course.enrolledStudents.length
+                    : 0;
                   const earnings = Math.floor(
-                    course.enrolledStudents.length *
+                    enrolledCount *
                       (course.coursePrice -
                         (course.discount * course.coursePrice) / 100)
                   );
@@ -172,7 +239,7 @@ const MyCourses = () => {
                             />
                           </svg>
                           <span className="text-sm text-gray-900">
-                            {course.enrolledStudents.length}
+                            {enrolledCount}
                           </span>
                         </div>
                       </td>
@@ -183,7 +250,6 @@ const MyCourses = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {/* Change: show publish status badge instead of createdAt date */}
                         {course.isPublished ? (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
                             Published
@@ -195,16 +261,27 @@ const MyCourses = () => {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3 cursor-pointer">
+                        <Link
+                          to={`/educator/edit-course/${course._id}`}
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3 cursor-pointer"
+                        >
                           Edit
-                        </button>
-                        {/* Change: make View navigate to the public course page */}
+                        </Link>
                         <Link
                           to={`/course/${course._id}`}
-                          className="text-gray-600 hover:text-gray-700 text-sm font-medium cursor-pointer"
+                          className="text-gray-600 hover:text-gray-700 text-sm font-medium mr-3 cursor-pointer"
                         >
                           View
                         </Link>
+                        <button
+                          onClick={() => {
+                            setCourseToDelete(course);
+                            setDeleteModalOpen(true);
+                          }}
+                          className="text-red-600 hover:text-red-700 text-sm font-medium cursor-pointer"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   );
@@ -237,7 +314,7 @@ const MyCourses = () => {
             </p>
             <Link
               to="/educator/add-course"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
             >
               Create Course
             </Link>
