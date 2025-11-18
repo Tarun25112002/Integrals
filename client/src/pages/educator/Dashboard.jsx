@@ -3,13 +3,28 @@ import { Link } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
 import { dummyDashboardData, assets } from "../../assets/assets";
 import Loading from "../../components/student/Loading";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
-  const { currency } = useContext(AppContext);
+  const { currency, backendUrl, getToken } = useContext(AppContext);
 
   const fetchDashboardData = async () => {
-    setDashboardData(dummyDashboardData);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(
+        `${backendUrl}/api/educator/dashboard`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        setDashboardData(data.dashboardData);
+      } else {
+        toast.error(data.message || "Failed to load dashboard");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
