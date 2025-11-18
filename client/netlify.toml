@@ -1,6 +1,7 @@
 [build]
-  command = "cd client && bun install && bun run build"
-  publish = "client/dist"
+  base = "client"
+  command = "bun install && bun run build"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
