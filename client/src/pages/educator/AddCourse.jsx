@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import uniqid from "uniqid";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 import { assets } from "../../assets/assets";
+import axios from "axios";
+import { AppContext } from "../../context/AppContext";
+import { toast } from "react-toastify";
 
 const AddCourse = () => {
   const navigate = useNavigate();
@@ -117,27 +120,67 @@ const AddCourse = () => {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!courseTitle || !coursePrice || !image || chapters.length === 0) {
-      alert("Please fill in all required fields and add at least one chapter");
+      toast.error("Please fill in all required fields and add at least one chapter");
       return;
     }
 
-    const courseData = {
-      courseTitle,
-      courseDescription: quillRef.current?.root.innerHTML || "",
-      coursePrice: parseFloat(coursePrice),
-      discount: parseFloat(discount) || 0,
-      category,
-      courseThumbnail: image,
-      chapters,
-    };
+    // Transform local state to server schema
+    const courseContent = chapters.map((ch, chIdx) => ({
+      chapterId: ch.id,
+      chapterOrder: chIdx + 1,
+      chapterTitle: ch.chapterTitle,
+      chapterContent: (ch.lectures || []).map((l, lIdx) => ({
+        lectureId: l.id,
+        lectureTitle: l.lectureTitle,
+        lectureDuration: Number(l.lectureDuration) || 0,
+        lectureUrl: l.lectureUrl,
+        isPreviewFree: Boolean(l.isPreviewFree),
+        lectureOrder: lIdx + 1,
+      })),
+    }));
 
-    console.log("Course Data:", courseData);
-    alert("Course created successfully!");
-    navigate("/educator/my-courses");
+    if (
+      courseContent.length === 0 ||
+      courseContent.some((ch) => (ch.chapterContent || []).length === 0)
+    ) {
+      toast.error("Please add at least one lecture to each chapter");
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      const formData = new FormData();
+      formData.append("image", image);
+      formData.append(
+        "courseData",
+        JSON.stringify({
+          courseTitle,
+          courseDescription: quillRef.current?.root?.innerHTML || "",
+          coursePrice: Number(coursePrice),
+          discount: Number(discount) || 0,
+          courseContent,
+        })
+      );
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/educator/add-course`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        toast.success("Course created successfully!");
+        navigate("/educator/my-courses");
+      } else {
+        toast.error(data.message || "Failed to create course");
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (

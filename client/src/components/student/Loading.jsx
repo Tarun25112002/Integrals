@@ -1,17 +1,34 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useContext } from "react";
+import axios from "axios";
+import { AppContext } from "../../context/AppContext.jsx";
+
 const Loading = () => {
-  const {path } = useParams();
+  const { path } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { backendUrl } = useContext(AppContext);
+
   useEffect(() => {
-    if (path) {
-    const timer =   setTimeout(() => {
+    if (!path) return;
+
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get("session_id");
+
+    if (sessionId) {
+      axios
+        .get(`${backendUrl}/api/user/verify-payment`, { params: { session_id: sessionId } })
+        .catch(() => {})
+        .finally(() => {
+          navigate(`/${path}`);
+        });
+    } else {
+      const timer = setTimeout(() => {
         navigate(`/${path}`);
       }, 5000);
-
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [path, location.search]);
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-cyan-100/30 to-transparent">
       <div className="flex flex-col items-center gap-4">

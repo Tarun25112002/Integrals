@@ -35,39 +35,43 @@ export const purchaseCourse = async (req, res) => {
     if (!userData || !courseData) {
       return res.json({ success: false, message: "Data not found" });
     }
-    const purchaseData = {
-      courseId: courseData._id,
-      userId,
-      amount: (
+
+    const finalAmount = Number(
+      (
         courseData.coursePrice -
         (courseData.discount * courseData.coursePrice) / 100
-      ).toFixed(2),
-    };
+      ).toFixed(2)
+    );
 
-    const newPurchase = await Purchase.create(purchaseData);
+    const newPurchase = await Purchase.create({
+      courseId: courseData._id,
+      userId,
+      amount: finalAmount,
+    });
+
     const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const currency = process.env.CURRENCY.toLocaleLowerCase() || "USD";
+    const currency = (process.env.CURRENCY || "USD").toLowerCase();
+
     const line_items = [
       {
         price_data: {
           currency,
-          product_data: {
-            name: courseData.courseTitle,
-          },
-          unit_amount: Math.floor(newPurchase.amount) * 100,
+          product_data: { name: courseData.courseTitle },
+          unit_amount: Math.round(finalAmount * 100),
         },
         quantity: 1,
       },
     ];
+
     const session = await stripeInstance.checkout.sessions.create({
-      success_url: `${origin}/loading/my-enrollments`,
+      success_url: `${origin}/loading/my-enrollments?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/`,
-      line_items: line_items,
+      line_items,
       mode: "payment",
-      metadata: {
-        purchaseId: newPurchase._id.toString(),
-      },
+      customer_email: userData.email,
+      metadata: { purchaseId: newPurchase._id.toString() },
     });
+
     res.json({ success: true, url: session.url });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -130,3 +134,61 @@ export const getUserCourseProgress = async (req, res) => {
         res.json({ success: false, message: error.message });
       }
     }
+
+export const verifyStripePayment = async (req, res) => {
+    try {
+        const { session_id } = req.query;
+        if (!session_id) {
+          return res.status(400).json({ success: false, message: "Missing session_id" });
+        }
+
+        const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+        const session = await stripeInstance.checkout.sessions.retrieve(session_id);
+
+        if (!session) {
+          return res.status(404).json({ success: false, message: "Session not found" });
+        }
+
+        const { purchaseId } = session.metadata || {};
+        if (!purchaseId) {
+          return res.status(400).json({ success: false, message: "Missing purchaseId in metadata" });
+        }
+
+        const purchaseData = await Purchase.findById(purchaseId);
+        if (!purchaseData) {
+          return res.status(404).json({ success: false, message: "Purchase not found" });
+        }
+
+        if (purchaseData.status === "completed") {
+          return res.json({ success: true, status: "completed" });
+        }
+
+        if (session.payment_status === "paid") {
+          const userData = await User.findById(purchaseData.userId);
+          const courseData = await Course.findById(purchaseData.courseId);
+
+          if (!userData || !courseData) {
+            return res.status(404).json({ success: false, message: "User or Course not found" });
+          }
+
+          if (!courseData.enrolledStudents.includes(userData._id)) {
+            courseData.enrolledStudents.push(userData._id);
+            await courseData.save();
+          }
+
+          if (!userData.enrolledCourses.includes(courseData._id)) {
+            userData.enrolledCourses.push(courseData._id);
+            await userData.save();
+          }
+
+          purchaseData.status = "completed";
+          await purchaseData.save();
+
+          return res.json({ success: true, status: "completed" });
+        }
+
+        return res.json({ success: true, status: session.payment_status || "pending" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

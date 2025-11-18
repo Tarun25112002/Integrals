@@ -3,6 +3,8 @@ import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/student/Footer";
 import { toast } from "react-toastify";
+import axios from "axios";
+import { dummyEducatorData } from "../../assets/assets";
 
 
 function MyEnrollments() {
