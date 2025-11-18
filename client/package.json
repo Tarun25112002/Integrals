@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm install --include=optional @rollup/rollup-linux-x64-gnu --no-save || true"
   },
   "dependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.28.1",
+    
     "@clerk/clerk-react": "^5.48.1",
     "@tailwindcss/vite": "^4.1.13",
     "axios": "^1.13.2",
@@ -27,6 +29,9 @@
     "react-youtube": "^10.1.0",
     "tailwindcss": "^4.1.13",
     "uniqid": "^5.4.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.28.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
