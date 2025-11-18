@@ -28,6 +28,7 @@ const AddCourse = () => {
     lectureUrl: "",
     isPreviewFree: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!quillRef.current && editorRef.current) {
@@ -91,14 +92,17 @@ const AddCourse = () => {
   };
 
   const addLecture = () => {
-    if (!lectureDetails.lectureTitle || !lectureDetails.lectureUrl) {
-      alert("Please fill in all lecture details");
+    if (!lectureDetails.lectureTitle?.trim() || !lectureDetails.lectureUrl?.trim()) {
+      toast.error("Please fill all lecture details");
       return;
     }
 
     const newLecture = {
       id: uniqid(),
-      ...lectureDetails,
+      lectureTitle: lectureDetails.lectureTitle.trim(),
+      lectureDuration: Number(lectureDetails.lectureDuration) || 0,
+      lectureUrl: lectureDetails.lectureUrl.trim(),
+      isPreviewFree: Boolean(lectureDetails.isPreviewFree),
     };
 
     setChapters(
@@ -123,32 +127,49 @@ const AddCourse = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
-    if (!courseTitle || !coursePrice || !image || chapters.length === 0) {
-      toast.error("Please fill in all required fields and add at least one chapter");
+    if (!courseTitle.trim()) {
+      toast.error("Course title is required");
       return;
     }
+    if (!coursePrice || Number(coursePrice) <= 0) {
+      toast.error("Enter a valid price");
+      return;
+    }
+    if (!image) {
+      toast.error("Course thumbnail is required");
+      return;
+    }
+    if (!quillRef.current?.root?.innerHTML?.trim()) {
+      toast.error("Course description is required");
+      return;
+    }
+    if (chapters.length === 0) {
+      toast.error("Add at least one chapter");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     // Transform local state to server schema
     const courseContent = chapters.map((ch, chIdx) => ({
       chapterId: ch.id,
       chapterOrder: chIdx + 1,
-      chapterTitle: ch.chapterTitle,
+      chapterTitle: ch.chapterTitle?.trim() || `Chapter ${chIdx + 1}`,
       chapterContent: (ch.lectures || []).map((l, lIdx) => ({
         lectureId: l.id,
-        lectureTitle: l.lectureTitle,
+        lectureTitle: l.lectureTitle?.trim() || `Lecture ${lIdx + 1}`,
         lectureDuration: Number(l.lectureDuration) || 0,
-        lectureUrl: l.lectureUrl,
+        lectureUrl: l.lectureUrl?.trim() || "",
         isPreviewFree: Boolean(l.isPreviewFree),
         lectureOrder: lIdx + 1,
       })),
     }));
 
-    if (
-      courseContent.length === 0 ||
-      courseContent.some((ch) => (ch.chapterContent || []).length === 0)
-    ) {
-      toast.error("Please add at least one lecture to each chapter");
+    if (courseContent.some((ch) => (ch.chapterContent || []).length === 0)) {
+      toast.error("Each chapter must have at least one lecture");
+      setIsSubmitting(false);
       return;
     }
 
@@ -159,10 +180,10 @@ const AddCourse = () => {
       formData.append(
         "courseData",
         JSON.stringify({
-          courseTitle,
-          courseDescription: quillRef.current?.root?.innerHTML || "",
+          courseTitle: courseTitle.trim(),
+          courseDescription: quillRef.current.root.innerHTML,
           coursePrice: Number(coursePrice),
-          discount: Number(discount) || 0,
+          discount: Math.min(Math.max(Number(discount) || 0, 0), 100),
           courseContent,
         })
       );
@@ -170,17 +191,33 @@ const AddCourse = () => {
       const { data } = await axios.post(
         `${backendUrl}/api/educator/add-course`,
         formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       if (data.success) {
         toast.success("Course created successfully!");
+        // Reset form
+        setCourseTitle("");
+        setCoursePrice("");
+        setDiscount("");
+        setCategory("");
+        setImage(null);
+        setImagePreview(null);
+        setChapters([]);
+        quillRef.current?.setText?.("");
         navigate("/educator/my-courses");
       } else {
         toast.error(data.message || "Failed to create course");
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -432,9 +469,10 @@ const AddCourse = () => {
           </button>
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            disabled={isSubmitting}
+            className={`px-6 py-2.5 rounded-lg transition-colors ${isSubmitting ? "bg-blue-400 cursor-not-allowed text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
           >
-            Create Course
+            {isSubmitting ? "Creating..." : "Create Course"}
           </button>
         </div>
       </form>
