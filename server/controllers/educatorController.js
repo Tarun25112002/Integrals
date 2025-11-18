@@ -41,14 +41,16 @@ export const addCourse = async (req, res) => {
     const parsedCourseData = JSON.parse(courseData);
     parsedCourseData.educator = educatorId;
 
-    // Upload image to Cloudinary with explicit config
+    // Upload image to Cloudinary
     console.log("Uploading to Cloudinary...");
+    console.log("Cloudinary config check:", {
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET,
+      hasCloudName: !!process.env.CLOUDINARY_NAME,
+    });
+
     const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
-      resource_type: "image",
       folder: "course-thumbnails",
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-      cloud_name: process.env.CLOUDINARY_NAME,
     });
 
     console.log("Upload successful:", imageUpload.secure_url);
@@ -198,11 +200,7 @@ export const updateCourse = async (req, res) => {
 
     if (req.file) {
       const imageUpload = await cloudinary.uploader.upload(req.file.path, {
-        resource_type: "image",
         folder: "course-thumbnails",
-        api_key: process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
-        cloud_name: process.env.CLOUDINARY_NAME,
       });
       updates.courseThumbnail = imageUpload.secure_url;
     }
