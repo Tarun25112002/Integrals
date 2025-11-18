@@ -29,7 +29,8 @@ const MyCourses = () => {
     fetchEducatorCourses();
   }, []);
 
-  if (!courses || !allCourses) {
+  // Fix: only gate on courses, remove incorrect allCourses check
+  if (!courses) {
     return <Loading />;
   }
 
@@ -182,17 +183,28 @@ const MyCourses = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500">
-                          {new Date(course.createdAt).toLocaleDateString()}
-                        </span>
+                        {/* Change: show publish status badge instead of createdAt date */}
+                        {course.isPublished ? (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
+                            Published
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full font-medium">
+                            Draft
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button className="text-blue-600 hover:text-blue-700 text-sm font-medium mr-3 cursor-pointer">
                           Edit
                         </button>
-                        <button className="text-gray-600 hover:text-gray-700 text-sm font-medium cursor-pointer">
+                        {/* Change: make View navigate to the public course page */}
+                        <Link
+                          to={`/course/${course._id}`}
+                          className="text-gray-600 hover:text-gray-700 text-sm font-medium cursor-pointer"
+                        >
                           View
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   );
