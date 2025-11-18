@@ -17,7 +17,6 @@ function CourseDetails() {
   const [playerData, setPlayerData] = useState(null);
   const [expandedChapters, setExpandedChapters] = useState(new Set());
   const {
-    
     calculateRating,
     calculateNoOfLectures,
     calculateCourseDuration,
@@ -25,21 +24,62 @@ function CourseDetails() {
     currency,
     backendUrl,
     userData,
-    getToken
+    getToken,
   } = useContext(AppContext);
-  const fetchCourseData = async () => {
-   try {
-    const { data } = await axios.get(backendUrl + `/api/course/` + id);
-    if(data.success){
-      setCourseData(data.courseData);
-    }
-    else{
-      toast.error(data.message)
-    }
 
-   } catch (error) {
-    toast.error(error.message)
-   }
+  // Robust URL parsing helpers - moved outside useEffect
+  const extractYouTubeId = (url) => {
+    if (!url || typeof url !== "string") return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace("www.", "");
+      if (host === "youtu.be") {
+        const id = u.pathname.split("/")[1];
+        return id || null;
+      }
+      if (host === "youtube.com" || host === "m.youtube.com") {
+        if (u.pathname === "/watch") {
+          return u.searchParams.get("v");
+        }
+        const shorts = u.pathname.match(/^\/shorts\/([^/?]+)/);
+        if (shorts) return shorts[1];
+        const embed = u.pathname.match(/^\/embed\/([^/?]+)/);
+        if (embed) return embed[1];
+      }
+      if (host.endsWith("youtube-nocookie.com")) {
+        const embed = u.pathname.match(/^\/embed\/([^/?]+)/);
+        if (embed) return embed[1];
+      }
+    } catch {
+      // If a plain ID is provided
+      if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+    }
+    return null;
+  };
+
+  const getPlayerDataFromUrl = (url) => {
+    const id = extractYouTubeId(url);
+    if (id) return { playerType: "youtube", videoId: id };
+    if (
+      typeof url === "string" &&
+      (url.endsWith(".mp4") || url.includes("cloudinary"))
+    ) {
+      return { playerType: "video", src: url };
+    }
+    return null;
+  };
+
+  const fetchCourseData = async () => {
+    try {
+      const { data } = await axios.get(backendUrl + `/api/course/` + id);
+      if (data.success) {
+        setCourseData(data.courseData);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const enrollCourse = async () => {
@@ -72,6 +112,7 @@ function CourseDetails() {
       toast.error(error.message);
     }
   };
+
   const toggleChapter = (chapterIndex) => {
     const newExpandedChapters = new Set(expandedChapters);
     if (newExpandedChapters.has(chapterIndex)) {
@@ -83,15 +124,15 @@ function CourseDetails() {
   };
 
   useEffect(() => {
-    
-      fetchCourseData();
-    
+    fetchCourseData();
   }, []);
+
   useEffect(() => {
-   if(userData && courseData){
-     setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id));
-   }
+    if (userData && courseData) {
+      setIsAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id));
+    }
   }, [userData, courseData]);
+
   return courseData ? (
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 md:pt-30 pt-20 text-left">
@@ -113,8 +154,13 @@ function CourseDetails() {
             <div className="flex items-center gap-3">
               <Rating rating={calculateRating(courseData)} size="small" />
               <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                {(Array.isArray(courseData.courseRatings) ? courseData.courseRatings.length : 0)}{" "}
-                {(Array.isArray(courseData.courseRatings) && courseData.courseRatings.length === 1) ? "rating" : "ratings"}
+                {Array.isArray(courseData.courseRatings)
+                  ? courseData.courseRatings.length
+                  : 0}{" "}
+                {Array.isArray(courseData.courseRatings) &&
+                courseData.courseRatings.length === 1
+                  ? "rating"
+                  : "ratings"}
               </span>
             </div>
             {/* Divider */}
@@ -122,8 +168,11 @@ function CourseDetails() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span className="text-sm text-gray-600">
-                {(Array.isArray(courseData.enrolledStudents) ? courseData.enrolledStudents.length : 0)}{" "}
-                {(Array.isArray(courseData.enrolledStudents) && courseData.enrolledStudents.length === 1)
+                {Array.isArray(courseData.enrolledStudents)
+                  ? courseData.enrolledStudents.length
+                  : 0}{" "}
+                {Array.isArray(courseData.enrolledStudents) &&
+                courseData.enrolledStudents.length === 1
                   ? "student enrolled"
                   : "students enrolled"}
               </span>
@@ -142,7 +191,9 @@ function CourseDetails() {
             <div className="flex-1">
               <p className="text-sm text-gray-500">Instructor</p>
               <p className="font-semibold text-gray-800 mb-2">
-                {courseData.educator?.name ?? courseData.educator?.fullName ?? "Unknown Educator"}
+                {courseData.educator?.name ??
+                  courseData.educator?.fullName ??
+                  "Unknown Educator"}
               </p>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Experienced software engineer and educator with 8+ years in
@@ -268,14 +319,19 @@ function CourseDetails() {
                                         </span>
                                         {lecture.isPreviewFree && (
                                           <span
-                                            onClick={() =>
-                                              setPlayerData({
-                                                videoId: lecture.lectureUrl
-                                                  .split("/")
-                                                  .pop(),
-                                              })
-                                            }
-                                            className=" text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium"
+                                            onClick={() => {
+                                              const pd = getPlayerDataFromUrl(
+                                                lecture.lectureUrl
+                                              );
+                                              if (pd) {
+                                                setPlayerData(pd);
+                                              } else {
+                                                toast.error(
+                                                  "Unsupported or invalid preview video URL"
+                                                );
+                                              }
+                                            }}
+                                            className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium cursor-pointer"
                                           >
                                             Preview
                                           </span>
@@ -334,17 +390,25 @@ function CourseDetails() {
           <div className="relative mb-6 group">
             {playerData ? (
               <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                <Youtube
-                  videoId={playerData.videoId}
-                  opts={{
-                    playerVars: {
-                      autoplay: 1,
-                      modestbranding: 1,
-                      rel: 0,
-                    },
-                  }}
-                  iframeClassName="w-full aspect-video"
-                />
+                {playerData.playerType === "youtube" ? (
+                  <Youtube
+                    videoId={playerData.videoId}
+                    opts={{
+                      playerVars: {
+                        autoplay: 1,
+                        modestbranding: 1,
+                        rel: 0,
+                      },
+                    }}
+                    iframeClassName="w-full aspect-video"
+                  />
+                ) : (
+                  <video
+                    src={playerData.src}
+                    controls
+                    className="w-full aspect-video"
+                  />
+                )}
                 <button
                   onClick={() => setPlayerData(null)}
                   className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 cursor-pointer"
@@ -384,13 +448,30 @@ function CourseDetails() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       onClick={() => {
-                        const previewLecture = (Array.isArray(courseData.courseContent) ? courseData.courseContent : [])
-                          .flatMap((chapter) => (Array.isArray(chapter.chapterContent) ? chapter.chapterContent : []))
+                        const previewLecture = (
+                          Array.isArray(courseData.courseContent)
+                            ? courseData.courseContent
+                            : []
+                        )
+                          .flatMap((chapter) =>
+                            Array.isArray(chapter.chapterContent)
+                              ? chapter.chapterContent
+                              : []
+                          )
                           .find((lecture) => lecture.isPreviewFree);
                         if (previewLecture) {
-                          setPlayerData({
-                            videoId: previewLecture.lectureUrl.split("/").pop(),
-                          });
+                          const pd = getPlayerDataFromUrl(
+                            previewLecture.lectureUrl
+                          );
+                          if (pd) {
+                            setPlayerData(pd);
+                          } else {
+                            toast.error(
+                              "Unsupported or invalid preview video URL"
+                            );
+                          }
+                        } else {
+                          toast.error("Preview lecture URL not available");
                         }
                       }}
                       className="bg-white/90 hover:bg-white text-blue-600 p-6 rounded-full shadow-2xl transform group-hover:scale-110 transition-all duration-300 cursor-pointer"
@@ -547,7 +628,10 @@ function CourseDetails() {
             </div>
 
             {/* Enroll Button */}
-            <button onClick={enrollCourse} className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+            <button
+              onClick={enrollCourse}
+              className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+            >
               {isAlreadyEnrolled ? "Already Enrolled" : "Enroll Now"}
             </button>
 
@@ -565,6 +649,6 @@ function CourseDetails() {
   ) : (
     <Loading />
   );
-};
+}
 
 export default CourseDetails;
