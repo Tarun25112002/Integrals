@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import User from "../models/User.js";
-import "dotenv/config";
+import "../configs/env.js";
 import Stripe from "stripe";
 import Purchase from "../models/Purchase.js";
 import Course from "../models/Course.js";

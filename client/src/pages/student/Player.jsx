@@ -1,4 +1,12 @@
-import { useState, useContext, useEffect } from "react";
+import {
+  useState,
+  useContext,
+  useEffect,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { AppContext } from "../../context/AppContext";
 import { useParams } from "react-router-dom";
 import humanizeDuration from "humanize-duration";
@@ -6,6 +14,11 @@ import Youtube from "react-youtube";
 import DOMPurify from "dompurify";
 import Footer from "../../components/student/Footer";
 import InteractiveRating from "../../components/student/InteractiveRating";
+
+const VideoChatbot = lazy(() =>
+  import("../../components/student/VideoChatbot")
+);
+
 const Player = () => {
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState(null);
@@ -21,6 +34,10 @@ const Player = () => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const [showCommentBox, setShowCommentBox] = useState(false);
+
+  // Chatbot state
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [currentLecture, setCurrentLecture] = useState(null);
 
   const { enrolledCourses, calculateChapterTime } = useContext(AppContext);
 
@@ -57,20 +74,30 @@ const Player = () => {
   const getPlayerDataFromUrl = (url) => {
     const id = extractYouTubeId(url);
     if (id) return { playerType: "youtube", videoId: id };
-    if (typeof url === "string" && (url.endsWith(".mp4") || url.includes("cloudinary"))) {
+    if (
+      typeof url === "string" &&
+      (url.endsWith(".mp4") || url.includes("cloudinary"))
+    ) {
       return { playerType: "video", src: url };
     }
     return null;
   };
-  const totalLectures =
-    courseData?.courseContent?.reduce(
-      (total, chapter) => total + (chapter.chapterContent?.length || 0),
-      0
-    ) || 0;
-  const progress =
-    totalLectures > 0
-      ? Math.round((completedLectures.size / totalLectures) * 100)
-      : 0;
+  const totalLectures = useMemo(
+    () =>
+      courseData?.courseContent?.reduce(
+        (total, chapter) => total + (chapter.chapterContent?.length || 0),
+        0
+      ) || 0,
+    [courseData]
+  );
+
+  const progress = useMemo(
+    () =>
+      totalLectures > 0
+        ? Math.round((completedLectures.size / totalLectures) * 100)
+        : 0,
+    [totalLectures, completedLectures.size]
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem(`course-${courseId}-progress`);
@@ -105,13 +132,22 @@ const Player = () => {
   useEffect(() => {
     if (enrolledCourses && enrolledCourses.length > 0) {
       const getCourseData = () => {
-        const foundCourse = enrolledCourses.find((course) => course._id === courseId);
+        const foundCourse = enrolledCourses.find(
+          (course) => course._id === courseId
+        );
         if (foundCourse) {
           setCourseData(foundCourse);
-          const firstLecture = foundCourse.courseContent?.[0]?.chapterContent?.[0];
+          const firstChapter = foundCourse.courseContent?.[0];
+          const firstLecture = firstChapter?.chapterContent?.[0];
           if (firstLecture?.lectureUrl) {
             const pd = getPlayerDataFromUrl(firstLecture.lectureUrl);
             if (pd) setPlayerData(pd);
+            // Set initial lecture for chatbot
+            setCurrentLecture({
+              lectureId: firstLecture.lectureId ?? "0-0",
+              lectureTitle: firstLecture.lectureTitle,
+              chapterTitle: firstChapter.chapterTitle,
+            });
           }
         }
         setIsLoading(false);
@@ -120,15 +156,17 @@ const Player = () => {
     }
   }, [enrolledCourses, courseId]);
 
-  const toggleChapter = (chapterIndex) => {
-    const newExpandedChapters = new Set(expandedChapters);
-    if (newExpandedChapters.has(chapterIndex)) {
-      newExpandedChapters.delete(chapterIndex);
-    } else {
-      newExpandedChapters.add(chapterIndex);
-    }
-    setExpandedChapters(newExpandedChapters);
-  };
+  const toggleChapter = useCallback((chapterIndex) => {
+    setExpandedChapters((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(chapterIndex)) {
+        newSet.delete(chapterIndex);
+      } else {
+        newSet.add(chapterIndex);
+      }
+      return newSet;
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -153,33 +191,117 @@ const Player = () => {
           <div className="flex flex-col xl:flex-row gap-6 p-4 xl:p-6">
             {/* Left Section - Video Player & Details */}
             <div className="flex-1 xl:flex-[2]">
-              {/* Video Player */}
-              <div className="bg-black rounded-xl overflow-hidden shadow-lg mb-4">
-                <div className="aspect-video">
-                  {playerData?.playerType === "youtube" ? (
-                    <Youtube
-                      videoId={playerData.videoId}
-                      opts={{
-                        height: "100%",
-                        width: "100%",
-                        playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
-                      }}
-                      className="w-full h-full"
-                    />
-                  ) : playerData?.playerType === "video" ? (
-                    <video src={playerData.src} controls className="w-full h-full" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                        <p className="text-gray-400">Select a lecture to start</p>
+              {/* Video Player with optional AI panel below */}
+              <div className="flex flex-col gap-4 mb-4">
+                {/* Video Player */}
+                <div className="bg-black rounded-xl overflow-hidden shadow-lg w-full">
+                  <div className="aspect-video">
+                    {playerData?.playerType === "youtube" ? (
+                      <Youtube
+                        videoId={playerData.videoId}
+                        opts={{
+                          height: "100%",
+                          width: "100%",
+                          playerVars: {
+                            autoplay: 0,
+                            modestbranding: 1,
+                            rel: 0,
+                          },
+                        }}
+                        className="w-full h-full"
+                      />
+                    ) : playerData?.playerType === "video" ? (
+                      <video
+                        src={playerData.src}
+                        controls
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <svg
+                            className="w-16 h-16 mx-auto mb-4 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          <p className="text-gray-400">
+                            Select a lecture to start
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
+
+                {/* Inline AI Chatbot Panel - Below video player */}
+                {showChatbot && (
+                  <div className="w-full h-[400px]">
+                    <Suspense
+                      fallback={
+                        <div className="h-full w-full bg-white shadow-lg flex items-center justify-center rounded-xl border border-gray-200">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-600"></div>
+                        </div>
+                      }
+                    >
+                      <VideoChatbot
+                        courseId={courseId}
+                        lectureId={currentLecture?.lectureId ?? "default"}
+                        lectureTitle={
+                          currentLecture?.lectureTitle ||
+                          courseData?.courseTitle ||
+                          "Video Lecture"
+                        }
+                        onClose={() => setShowChatbot(false)}
+                      />
+                    </Suspense>
+                  </div>
+                )}
               </div>
+
+              {/* ASK ME Button - Only shows when video is playing */}
+              {playerData && (
+                <div className="flex justify-center -mt-2 mb-4">
+                  <button
+                    onClick={() => {
+                      if (
+                        !currentLecture &&
+                        courseData?.courseContent?.[0]?.chapterContent?.[0]
+                      ) {
+                        const firstChapter = courseData.courseContent[0];
+                        const firstLecture = firstChapter.chapterContent[0];
+                        setCurrentLecture({
+                          lectureId: firstLecture.lectureId || "default",
+                          lectureTitle:
+                            firstLecture.lectureTitle || courseData.courseTitle,
+                          chapterTitle: firstChapter.chapterTitle,
+                        });
+                      }
+                      setShowChatbot(true);
+                    }}
+                    className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium text-sm rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    <svg
+                      className="w-4 h-4 group-hover:scale-110 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                      />
+                    </svg>
+                    <span>Ask AI</span>
+                    <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">
+                      ✨
+                    </span>
+                  </button>
+                </div>
+              )}
 
               {/* Course Details Card */}
               <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
@@ -735,18 +857,40 @@ const Player = () => {
                               const lectureId = `${index}-${i}`;
                               const isCompleted =
                                 completedLectures.has(lectureId);
+                              const lecturePd = getPlayerDataFromUrl(
+                                lecture.lectureUrl
+                              );
                               const isActive =
-                                playerData?.videoId ===
-                                lecture.lectureUrl.split("/").pop();
+                                !!playerData &&
+                                !!lecturePd &&
+                                lecturePd.playerType ===
+                                  playerData.playerType &&
+                                (lecturePd.playerType === "youtube"
+                                  ? lecturePd.videoId === playerData.videoId
+                                  : lecturePd.src === playerData.src);
 
                               return (
                                 <div
                                   key={i}
                                   onClick={() => {
-                                    setPlayerData({
-                                      videoId: lecture.lectureUrl
-                                        .split("/")
-                                        .pop(),
+                                    const pd = getPlayerDataFromUrl(
+                                      lecture.lectureUrl
+                                    );
+                                    if (pd) {
+                                      setPlayerData(pd);
+                                    } else {
+                                      setPlayerData({
+                                        playerType: "youtube",
+                                        videoId: lecture.lectureUrl
+                                          .split("/")
+                                          .pop(),
+                                      });
+                                    }
+                                    // Set current lecture for chatbot
+                                    setCurrentLecture({
+                                      lectureId: lecture.lectureId ?? lectureId,
+                                      lectureTitle: lecture.lectureTitle,
+                                      chapterTitle: chapter.chapterTitle,
                                     });
                                   }}
                                   className={`group flex items-start gap-3 p-3 pl-6 cursor-pointer transition-all duration-200 border-l-4 ${

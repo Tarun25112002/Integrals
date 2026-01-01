@@ -1,13 +1,14 @@
 import express from "express";
 import connectDB from "./configs/mongodb.js";
 import cors from "cors";
-import "dotenv/config";
+import "./configs/env.js";
 import { clerkMiddleware } from "@clerk/express";
 import educatorRouter from "./routes/educatorRoutes.js";
 import { clerkWebhooks, stripeWebhooks } from "./controllers/webhooks.js";
 import "./configs/cloudinary.js";
 import courseRouter from "./routes/courseRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import chatbotRouter from "./routes/chatbotRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 app.use("/api/educator", express.json(), educatorRouter);
 app.use("/api/course", express.json(), courseRouter);
 app.use("/api/user", express.json(), userRouter);
+app.use("/api/chatbot", express.json(), chatbotRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
