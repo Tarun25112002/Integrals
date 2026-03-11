@@ -1,14 +1,15 @@
 import { useEffect, useState, useContext } from "react";
-import { dummyStudentEnrolled } from "../../assets/assets";
 import Loading from "../../components/student/Loading";
 import { AppContext } from "../../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "@clerk/clerk-react";
 
 const StudentsEnrolled = () => {
   const [studentEnrolled, setStudentEnrolled] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { backendUrl, getToken } = useContext(AppContext);
+  const { isLoaded, isSignedIn } = useAuth();
 
   const fetchEnrolledStudents = async () => {
     try {
@@ -28,8 +29,9 @@ const StudentsEnrolled = () => {
   };
 
   useEffect(() => {
+    if (!isLoaded) return;
     fetchEnrolledStudents();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   if (!studentEnrolled) {
     return <Loading />;

@@ -6,7 +6,10 @@ import User from "../models/User.js";
 
 export const updateRoleToEducator = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth?.()?.userId;
+    if (!userId) {
+      return res.json({ success: false, message: "Please sign in first" });
+    }
     await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: { role: "educator" },
     });
@@ -27,7 +30,7 @@ export const addCourse = async (req, res) => {
   try {
     const { courseData } = req.body;
     const imageFile = req.file;
-    const educatorId = req.auth.userId;
+    const educatorId = req.auth().userId;
 
     console.log(
       "File received:",
@@ -72,7 +75,7 @@ export const addCourse = async (req, res) => {
 
 export const getEducatorCoursses = async (req, res) => {
   try {
-    const educator = req.auth.userId;
+    const educator = req.auth().userId;
     const courses = await Course.find({ educator });
     res.json({ success: true, courses });
   } catch (error) {
@@ -82,7 +85,7 @@ export const getEducatorCoursses = async (req, res) => {
 
 export const educatorDashboardData = async (req, res) => {
   try {
-    const educator = req.auth.userId;
+    const educator = req.auth().userId;
     const courses = await Course.find({ educator });
     const totalCourses = courses.length;
     const courseIds = courses.map((course) => course._id);
@@ -132,7 +135,7 @@ export const educatorDashboardData = async (req, res) => {
 
 export const getEnrolledStudents = async (req, res) => {
   try {
-    const educator = req.auth.userId;
+    const educator = req.auth().userId;
     const courses = await Course.find({ educator });
     const courseIds = courses.map((course) => course._id);
     const purchases = await Purchase.find({
@@ -154,7 +157,7 @@ export const getEnrolledStudents = async (req, res) => {
 
 export const updateCourse = async (req, res) => {
   try {
-    const educatorId = req.auth.userId;
+    const educatorId = req.auth().userId;
     const courseId = req.params.id;
 
     const course = await Course.findById(courseId);
@@ -218,6 +221,37 @@ export const updateCourse = async (req, res) => {
     await course.save();
 
     return res.json({ success: true, course });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+export const deleteCourse = async (req, res) => {
+  try {
+    const educatorId = req.auth().userId;
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.json({ success: false, message: "Course not found" });
+    }
+
+    if (course.educator.toString() !== educatorId.toString()) {
+      return res.json({ success: false, message: "Unauthorized Access" });
+    }
+
+    // Delete thumbnail from Cloudinary if it's a cloudinary URL
+    if (course.courseThumbnail && course.courseThumbnail.includes("cloudinary")) {
+      const publicId = course.courseThumbnail
+        .split("/")
+        .slice(-2)
+        .join("/")
+        .replace(/\.[^/.]+$/, "");
+      await cloudinary.uploader.destroy(publicId).catch(() => {});
+    }
+
+    await Course.findByIdAndDelete(courseId);
+    return res.json({ success: true, message: "Course deleted successfully" });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }

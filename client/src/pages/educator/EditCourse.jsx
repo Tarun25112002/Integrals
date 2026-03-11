@@ -8,9 +8,11 @@ import axios from "axios";
 import { AppContext } from "../../context/AppContext";
 import { toast } from "react-toastify";
 import Loading from "../../components/student/Loading";
+import { useAuth } from "@clerk/clerk-react";
 
 const EditCourse = () => {
   const { backendUrl, getToken } = useContext(AppContext);
+  const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -18,7 +20,7 @@ const EditCourse = () => {
   const editorRef = useRef(null);
 
   const [isQuillReady, setIsQuillReady] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [courseTitle, setCourseTitle] = useState("");
   const [coursePrice, setCoursePrice] = useState("");
@@ -62,6 +64,7 @@ const EditCourse = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
+        setIsLoading(true);
         const token = await getToken();
         const { data } = await axios.get(`${backendUrl}/api/course/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -71,7 +74,7 @@ const EditCourse = () => {
           setCourseTitle(cd.courseTitle || "");
           setCoursePrice(String(cd.coursePrice ?? ""));
           setDiscount(String(cd.discount ?? ""));
-          setCategory("");
+          setCategory(cd.category || "");
           setIsPublished(Boolean(cd.isPublished));
           setImagePreview(cd.courseThumbnail || null);
           if (quillRef.current && cd.courseDescription) {
@@ -97,10 +100,11 @@ const EditCourse = () => {
         setIsLoading(false);
       }
     };
-    if (isQuillReady) {
+    if (isQuillReady && isLoaded) {
       fetchCourse();
     }
-  }, [isQuillReady, backendUrl, id, getToken]);
+  }, [isQuillReady, isLoaded, isSignedIn, backendUrl, id, getToken]);
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

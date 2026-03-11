@@ -1,18 +1,31 @@
 import { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AppContext";
-import { dummyDashboardData, assets } from "../../assets/assets";
 import Loading from "../../components/student/Loading";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "@clerk/clerk-react";
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { currency, backendUrl, getToken } = useContext(AppContext);
+  const { isSignedIn, isLoaded } = useAuth();
+  const navigate = useNavigate();
 
   const fetchDashboardData = async () => {
     try {
+      setIsLoading(true);
+      setError(null);
       const token = await getToken();
+
+      if (!token) {
+        setError("Please sign in to access the educator dashboard.");
+        setIsLoading(false);
+        return;
+      }
+
       const { data } = await axios.get(
         `${backendUrl}/api/educator/dashboard`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -20,19 +33,57 @@ const Dashboard = () => {
       if (data.success) {
         setDashboardData(data.dashboardData);
       } else {
+        setError(data.message || "Failed to load dashboard");
         toast.error(data.message || "Failed to load dashboard");
       }
     } catch (error) {
+      setError(error.message || "Something went wrong");
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Wait for Clerk to finish loading before attempting any API call.
+  // Without isLoaded, getToken() fires before auth is ready and returns null,
+  // causing the component to lock into an error state for logged-in users.
   useEffect(() => {
+    if (!isLoaded) return;
     fetchDashboardData();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
-  if (!dashboardData) {
+  if (isLoading) {
     return <Loading />;
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center max-w-md">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to load dashboard</h2>
+          <p className="text-sm text-gray-500 mb-6">{error || "An unexpected error occurred."}</p>
+          <div className="space-y-3">
+            <button
+              onClick={fetchDashboardData}
+              className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 px-4 rounded-lg transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              className="block w-full bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium py-2.5 px-4 rounded-lg border border-gray-300 transition-colors"
+            >
+              Go to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const enrolledCount = dashboardData.enrolledStudentsData?.length ?? 0;

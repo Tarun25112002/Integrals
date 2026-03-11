@@ -9,7 +9,7 @@ import CourseProgress from "../models/CourseProgress.js";
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const getUserData = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const user = await User.findById(userId);
     if (!user) {
       return res.json({ success: false, message: "User not found" });
@@ -22,7 +22,7 @@ export const getUserData = async (req, res) => {
 
 export const userEnrolledCourses = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const user = await User.findById(userId).populate({
       path: "enrolledCourses",
       populate: { path: "educator", select: "name imageUrl" },
@@ -40,7 +40,7 @@ export const purchaseCourse = async (req, res) => {
   try {
     const { courseId } = req.body;
     const { origin } = req.headers;
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const userData = await User.findById(userId);
     const courseData = await Course.findById(courseId);
     if (!userData || !courseData) {
@@ -91,7 +91,7 @@ export const purchaseCourse = async (req, res) => {
 
 export const updateUserCourseProgress = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const { courseId, lectureId } = req.body;
 
     if (!courseId || !lectureId) {
@@ -146,7 +146,7 @@ export const updateUserCourseProgress = async (req, res) => {
 
 export const getUserCourseProgress = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const { courseId } = req.body;
 
     if (!courseId) {
@@ -165,7 +165,7 @@ export const getUserCourseProgress = async (req, res) => {
 
 export const getUserAllCourseProgress = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+    const userId = req.auth().userId;
     const user = await User.findById(userId);
     if (!user || !user.enrolledCourses.length) {
       return res.json({ success: true, data: [] });
@@ -208,7 +208,7 @@ export const getUserAllCourseProgress = async (req, res) => {
   }
 };
 export const addUserRating = async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.auth().userId;
   const { courseId, rating } = req.body;
   if (!courseId || !userId || !rating || rating < 1 || rating > 5) {
     return res.json({ success: false, message: "Invalid data provided" });

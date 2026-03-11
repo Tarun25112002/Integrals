@@ -4,9 +4,11 @@ import { AppContext } from "../../context/AppContext";
 import Loading from "../../components/student/Loading";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "@clerk/clerk-react";
 
 const MyCourses = () => {
   const { currency, backendUrl, getToken } = useContext(AppContext);
+  const { isLoaded, isSignedIn } = useAuth();
   const [courses, setCourses] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
@@ -53,8 +55,9 @@ const MyCourses = () => {
   };
 
   useEffect(() => {
+    if (!isLoaded) return;
     fetchEducatorCourses();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   if (!courses) {
     return <Loading />;
