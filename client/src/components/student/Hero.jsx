@@ -27,7 +27,7 @@ const Hero = () => {
     if (!textElement || !cursorElement) return;
 
     gsap.set(cursorElement, { opacity: 1 });
-    
+
     const cursorAnimation = gsap.to(cursorElement, {
       opacity: 0,
       duration: 0.5,
@@ -43,7 +43,10 @@ const Hero = () => {
       const pauseAfterTyping = 2000;
       const pauseAfterDeleting = 500;
 
-      if (!isDeletingRef.current && currentIndexRef.current < currentGoal.length) {
+      if (
+        !isDeletingRef.current &&
+        currentIndexRef.current < currentGoal.length
+      ) {
         setDisplayedText(currentGoal.substring(0, currentIndexRef.current + 1));
         currentIndexRef.current++;
         timeoutRef.current = setTimeout(typeText, typingSpeed);
@@ -51,12 +54,16 @@ const Hero = () => {
         setDisplayedText(currentGoal.substring(0, currentIndexRef.current - 1));
         currentIndexRef.current--;
         timeoutRef.current = setTimeout(typeText, deletingSpeed);
-      } else if (!isDeletingRef.current && currentIndexRef.current === currentGoal.length) {
+      } else if (
+        !isDeletingRef.current &&
+        currentIndexRef.current === currentGoal.length
+      ) {
         isDeletingRef.current = true;
         timeoutRef.current = setTimeout(typeText, pauseAfterTyping);
       } else if (isDeletingRef.current && currentIndexRef.current === 0) {
         isDeletingRef.current = false;
-        currentTextIndexRef.current = (currentTextIndexRef.current + 1) % goals.length;
+        currentTextIndexRef.current =
+          (currentTextIndexRef.current + 1) % goals.length;
         timeoutRef.current = setTimeout(typeText, pauseAfterDeleting);
       }
     };
@@ -91,7 +98,7 @@ const Hero = () => {
         />
       </h1>
 
-      <p className="md:block hidden text-gray-500 max-2-2xl mx-auto">
+      <p className="md:block hidden text-gray-500 max-w-2xl mx-auto">
         We bring together world-class instructors, interactive content, and a
         supportive community to help you achieve your personal and professional
         goals.

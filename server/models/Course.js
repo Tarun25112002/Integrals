@@ -1,21 +1,26 @@
 import mongoose from "mongoose";
 
-const lectureSchema = new mongoose.Schema({
-    lectureId:{type:String, required:true},
-    lectureTitle:{type:String, required:true},
-    lectureDuration:{type:Number, required:true},
-    lectureUrl:{type:String, required:true},
-    isPreviewFree:{type:Boolean, required:true},
-    lectureOrder:{type:Number, required:true}
-}, {_id:false});
+const lectureSchema = new mongoose.Schema(
+  {
+    lectureId: { type: String, required: true },
+    lectureTitle: { type: String, required: true },
+    lectureDuration: { type: Number, required: true },
+    lectureUrl: { type: String, required: true },
+    isPreviewFree: { type: Boolean, required: true },
+    lectureOrder: { type: Number, required: true },
+  },
+  { _id: false },
+);
 
-
-const chapterSchema = new mongoose.Schema({
-    chapterId:{type:String, required:true},
-    chapterOrder:{type:Number, required:true},
-    chapterTitle:{type:String, required:true},
-    chapterContent:[lectureSchema]
-}, {_id:false});
+const chapterSchema = new mongoose.Schema(
+  {
+    chapterId: { type: String, required: true },
+    chapterOrder: { type: Number, required: true },
+    chapterTitle: { type: String, required: true },
+    chapterContent: [lectureSchema],
+  },
+  { _id: false },
+);
 
 const courseSchema = new mongoose.Schema(
   {
@@ -38,7 +43,11 @@ const courseSchema = new mongoose.Schema(
     educator: { type: String, ref: "User", required: true },
     enrolledStudents: { type: [{ type: String, ref: "User" }], default: [] },
   },
-  { timestamps: true, minimize: false }
+  { timestamps: true, minimize: false },
 );
+// Create indexes for common queries (must be before model creation)
+courseSchema.index({ educator: 1 });
+courseSchema.index({ isPublished: 1 });
+
 const Course = mongoose.model("Course", courseSchema);
 export default Course;

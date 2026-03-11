@@ -24,7 +24,7 @@ const TestimonialsSection = () => {
               <div
                 className="flex items-center gap-2"
                 aria-label={`Rating: ${Math.floor(
-                  testimonial.rating
+                  testimonial.rating,
                 )} out of 5`}
               >
                 {[...Array(5)].map((_, i) => (
@@ -54,6 +54,7 @@ const TestimonialsSection = () => {
                 className="h-12 w-12 rounded-full object-cover"
                 src={testimonial.image}
                 alt={testimonial.name}
+                loading="lazy"
               />
               <div>
                 <h3 className="text-base font-semibold text-gray-900">

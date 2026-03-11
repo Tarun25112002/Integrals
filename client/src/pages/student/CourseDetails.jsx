@@ -9,6 +9,7 @@ import Youtube from "react-youtube";
 import Rating from "../../components/student/Rating";
 import { toast } from "react-toastify";
 import axios from "axios";
+import DOMPurify from "dompurify";
 
 function CourseDetails() {
   const { id } = useParams();
@@ -95,7 +96,7 @@ function CourseDetails() {
       const { data } = await axios.post(
         backendUrl + "/api/user/purchase",
         { courseId: courseData._id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (data.success) {
@@ -145,7 +146,9 @@ function CourseDetails() {
           <p
             className="pt-4 md:text-base text-sm"
             dangerouslySetInnerHTML={{
-              __html: courseData.courseDescription.slice(0, 200),
+              __html: DOMPurify.sanitize(
+                courseData.courseDescription.slice(0, 200),
+              ),
             }}
           ></p>
           {/* Rating and Stats Section */}
@@ -314,20 +317,20 @@ function CourseDetails() {
                                         <span className="text-xs text-gray-500">
                                           {humanizeDuration(
                                             lecture.lectureDuration * 60 * 1000,
-                                            { units: ["h", "m", "s"] }
+                                            { units: ["h", "m", "s"] },
                                           )}
                                         </span>
                                         {lecture.isPreviewFree && (
                                           <span
                                             onClick={() => {
                                               const pd = getPlayerDataFromUrl(
-                                                lecture.lectureUrl
+                                                lecture.lectureUrl,
                                               );
                                               if (pd) {
                                                 setPlayerData(pd);
                                               } else {
                                                 toast.error(
-                                                  "Unsupported or invalid preview video URL"
+                                                  "Unsupported or invalid preview video URL",
                                                 );
                                               }
                                             }}
@@ -380,7 +383,9 @@ function CourseDetails() {
             </h3>
             <div
               className="mt-3 bg-white/70 backdrop-blur-sm border border-gray-200 rounded-xl p-4 md:p-5 text-gray-700 leading-relaxed space-y-3 hover:bg-sky-50 hover:border-sky-200 transition-all duration-300  [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-900 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-gray-900 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mt-1 [&_strong]:text-gray-900"
-              dangerouslySetInnerHTML={{ __html: courseData.courseDescription }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(courseData.courseDescription),
+              }}
             />
           </div>
         </div>
@@ -442,8 +447,8 @@ function CourseDetails() {
                 {/* Play button overlay - only show if there's a preview available */}
                 {courseData.courseContent.some((chapter) =>
                   chapter.chapterContent.some(
-                    (lecture) => lecture.isPreviewFree
-                  )
+                    (lecture) => lecture.isPreviewFree,
+                  ),
                 ) && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
@@ -456,18 +461,18 @@ function CourseDetails() {
                           .flatMap((chapter) =>
                             Array.isArray(chapter.chapterContent)
                               ? chapter.chapterContent
-                              : []
+                              : [],
                           )
                           .find((lecture) => lecture.isPreviewFree);
                         if (previewLecture) {
                           const pd = getPlayerDataFromUrl(
-                            previewLecture.lectureUrl
+                            previewLecture.lectureUrl,
                           );
                           if (pd) {
                             setPlayerData(pd);
                           } else {
                             toast.error(
-                              "Unsupported or invalid preview video URL"
+                              "Unsupported or invalid preview video URL",
                             );
                           }
                         } else {
@@ -491,8 +496,8 @@ function CourseDetails() {
                 {/* Preview badge */}
                 {courseData.courseContent.some((chapter) =>
                   chapter.chapterContent.some(
-                    (lecture) => lecture.isPreviewFree
-                  )
+                    (lecture) => lecture.isPreviewFree,
+                  ),
                 ) && (
                   <div className="absolute bottom-4 left-4">
                     <div className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold shadow-lg flex items-center gap-2">

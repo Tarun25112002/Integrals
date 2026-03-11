@@ -21,12 +21,18 @@ app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 app.use(clerkMiddleware());
 
+// Cache static API responses for courses list (5 minutes)
+const cacheMiddleware = (duration) => (req, res, next) => {
+  res.set("Cache-Control", `public, max-age=${duration}`);
+  next();
+};
+
 app.get("/", (req, res) => {
   res.send("API Working");
 });
 
 app.use("/api/educator", express.json(), educatorRouter);
-app.use("/api/course", express.json(), courseRouter);
+app.use("/api/course", express.json(), cacheMiddleware(300), courseRouter);
 app.use("/api/user", express.json(), userRouter);
 app.use("/api/chatbot", express.json(), chatbotRouter);
 

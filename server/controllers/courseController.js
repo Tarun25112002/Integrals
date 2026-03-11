@@ -7,7 +7,8 @@ export const getAllCourse = async (req, res) => {
       .populate({
         path: "educator",
         select: "name imageUrl",
-      });
+      })
+      .lean();
 
     res.json({ success: true, courses });
   } catch (error) {
@@ -31,13 +32,19 @@ export const getCourseId = async (req, res) => {
     // Only hide non-preview lecture URLs when the requester is not enrolled and not the educator
     const userId = req.auth?.userId;
     const isEducatorViewing =
-      (typeof courseData.educator === "object" && courseData.educator?._id?.toString() === userId) ||
-      (typeof courseData.educator === "string" && courseData.educator === userId);
+      (typeof courseData.educator === "object" &&
+        courseData.educator?._id?.toString() === userId) ||
+      (typeof courseData.educator === "string" &&
+        courseData.educator === userId);
     const isEnrolled =
       Array.isArray(courseData.enrolledStudents) &&
       courseData.enrolledStudents.map((x) => x.toString()).includes(userId);
 
-    if (!isEducatorViewing && !isEnrolled && Array.isArray(courseData.courseContent)) {
+    if (
+      !isEducatorViewing &&
+      !isEnrolled &&
+      Array.isArray(courseData.courseContent)
+    ) {
       courseData.courseContent.forEach((chapter) => {
         chapter.chapterContent.forEach((lecture) => {
           if (!lecture.isPreviewFree) {

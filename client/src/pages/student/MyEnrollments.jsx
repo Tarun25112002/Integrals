@@ -2,14 +2,10 @@ import { useContext, useMemo, useState, useEffect } from "react";
 import { AppContext } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/student/Footer";
-import { toast } from "react-toastify";
 import axios from "axios";
-import { dummyEducatorData } from "../../assets/assets";
-
 
 function MyEnrollments() {
   const {
-    
     enrolledCourses,
     calculateCourseDuration,
     calculateNoOfLectures,
@@ -17,13 +13,11 @@ function MyEnrollments() {
     fetchUserEnrolledCourses,
     backendUrl,
     getToken,
-    setProgressArray
-
-     
   } = useContext(AppContext);
 
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // all, in-progress, completed
+  const [progressArray, setProgressArray] = useState([]);
 
   // Move useEffect inside the component
   useEffect(() => {
@@ -32,48 +26,39 @@ function MyEnrollments() {
     }
   }, [userData, fetchUserEnrolledCourses]);
 
-  const progressArray = [
-  
-  ];
+  // Fetch progress for all enrolled courses
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const token = await getToken();
+        const { data } = await axios.get(
+          backendUrl + "/api/user/all-course-progress",
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (data.success) {
+          setProgressArray(data.data);
+        }
+      } catch (error) {
+        // Progress fetch failed silently - will show 0%
+      }
+    };
+    if (userData && enrolledCourses.length > 0) {
+      fetchProgress();
+    }
+  }, [userData, enrolledCourses]);
 
   const coursesWithProgress = useMemo(() => {
     return enrolledCourses.map((course, index) => {
-      const progressData = progressArray[index] || {
-        lectureCompleted: 0,
-        totalLectures: 1,
-      };
-      const { lectureCompleted, totalLectures } = progressData;
+      const progressEntry = progressArray.find(
+        (p) => p.courseId?.toString() === course._id?.toString(),
+      );
+      const lectureCompleted = progressEntry?.lectureCompleted || 0;
+      const totalLectures =
+        progressEntry?.totalLectures || calculateNoOfLectures(course) || 1;
       const progress =
         totalLectures === 0
           ? 0
           : Math.floor((lectureCompleted / totalLectures) * 100);
-const getCourseProgress = async () => {
-  try {
-    const token = await getToken();
-    const tempProgressArray = await Promise.all(
-      enrolledCourses.map(async (course, index) => {
-        const { data } = await axios.get(
-          backendUrl + "/api/user/get-course-progress",{courseId: course._id},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-           
-          }
-        );
-         let totalLectures = calculateNoOfLectures(course);
-         const lectureCompleted = data.progressData
-           ? data.progressData.lectureCompleted.length
-           : 0;
-         return { totalLectures, lectureCompleted };
-       
-      })
-    )
-   setProgressArray(tempProgressArray);
-  } catch (error) {
-    toast.error(error.message);
-  }
-}
       return {
         ...course,
         progress,
@@ -82,14 +67,14 @@ const getCourseProgress = async () => {
         originalIndex: index,
       };
     });
-  }, [enrolledCourses]);
+  }, [enrolledCourses, progressArray, calculateNoOfLectures]);
 
   const totalCourses = coursesWithProgress.length;
   const completedCourses = coursesWithProgress.filter(
-    (c) => c.progress === 100
+    (c) => c.progress === 100,
   ).length;
   const inProgressCourses = coursesWithProgress.filter(
-    (c) => c.progress > 0 && c.progress < 100
+    (c) => c.progress > 0 && c.progress < 100,
   ).length;
 
   const filteredCourses = useMemo(() => {
@@ -98,7 +83,7 @@ const getCourseProgress = async () => {
     }
     if (filter === "in-progress") {
       return coursesWithProgress.filter(
-        (course) => course.progress > 0 && course.progress < 100
+        (course) => course.progress > 0 && course.progress < 100,
       );
     }
     return coursesWithProgress;
@@ -266,7 +251,7 @@ const getCourseProgress = async () => {
                         typeof course.educator === "object" &&
                         course.educator?.name
                           ? course.educator.name
-                          : dummyEducatorData?.name || "Instructor";
+                          : "Instructor";
 
                       return (
                         <tr
@@ -383,7 +368,7 @@ const getCourseProgress = async () => {
                   const educatorName =
                     typeof course.educator === "object" && course.educator?.name
                       ? course.educator.name
-                      : dummyEducatorData?.name || "Instructor";
+                      : "Instructor";
 
                   return (
                     <div

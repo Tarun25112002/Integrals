@@ -26,6 +26,7 @@ const CourseCard = ({ course }) => {
       <img
         src={thumbnail}
         alt="course thumbnail"
+        loading="lazy"
         className="w-full h-48 object-cover"
         onError={(e) => {
           e.target.src = "https://via.placeholder.com/400x300?text=Image+Error";

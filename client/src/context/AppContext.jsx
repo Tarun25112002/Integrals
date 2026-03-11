@@ -14,20 +14,18 @@ export const AppContextProvider = (props) => {
   const currency = import.meta.env.VITE_CURRENCY;
   const [allCourses, setAllCourses] = useState([]);
   const [isEducator, setIsEducator] = useState(false);
-const [enrolledCourses, setEnrolledCourses] = useState([]);
-const [userData, setUserData] = useState(null);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [userData, setUserData] = useState(null);
   const fetchAllCourses = async () => {
     try {
-    const {data} =  await axios.get(backendUrl + "/api/course/all")
-        if(data.success){
-          setAllCourses(data.courses)
-        }
-        else{
-          toast.error(data.message)
-        }
-      
+      const { data } = await axios.get(backendUrl + "/api/course/all");
+      if (data.success) {
+        setAllCourses(data.courses);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
-      toast.error(error.message)
+      toast.error(error.message);
     }
   };
   const fetchUserData = async () => {
@@ -69,7 +67,9 @@ const [userData, setUserData] = useState(null);
   const calculateCourseDuration = (course) => {
     let time = 0;
     course.courseContent.map((chapter) =>
-      chapter.chapterContent.map((lecture) => (time += lecture.lectureDuration))
+      chapter.chapterContent.map(
+        (lecture) => (time += lecture.lectureDuration),
+      ),
     );
     return humanizeDuration(time * 60 * 1000, { units: ["h", "m", "s"] });
   };
@@ -86,38 +86,35 @@ const [userData, setUserData] = useState(null);
   };
 
   const fetchUserEnrolledCourses = async () => {
-    const token = await getToken();
-   try {
-     const { data } = await axios.get(
-       backendUrl + "/api/user/enrolled-courses",
-       {
-         headers: {
-           Authorization: `Bearer ${token}`,
-         },
-       }
-     );
-     if (data.success) {
-       setEnrolledCourses(data.enrolledCourses.reverse());
-     } else {
-       toast.error(data.message);
-     }
-   } catch (error) {
-    toast.error(error.message)
-   }
-  }
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(
+        backendUrl + "/api/user/enrolled-courses",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (data.success) {
+        setEnrolledCourses(data.enrolledCourses.reverse());
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
-    
     fetchAllCourses();
   }, []);
- useEffect(() => {
-   if(user){
-
-    fetchUserData()
-    fetchUserEnrolledCourses()
-   }
- },[user])
-
+  useEffect(() => {
+    if (user) {
+      fetchUserData();
+      fetchUserEnrolledCourses();
+    }
+  }, [user]);
 
   const value = {
     currency,
@@ -135,8 +132,7 @@ const [userData, setUserData] = useState(null);
     setUserData,
     getToken,
     fetchAllCourses,
-    backendUrl
-
+    backendUrl,
   };
 
   return (

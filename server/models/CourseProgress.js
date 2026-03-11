@@ -1,24 +1,27 @@
-import mongoose  from "mongoose";
-const courseProgressSchema = new mongoose.Schema({
-  userId: {
-    type: String,
-    required: true,
-  },
-    courseId: {
-    type: String,
-    required: true,
+import mongoose from "mongoose";
+const courseProgressSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
     },
-    completed: 
-      {
-        type: Boolean,
-        default: false,
-        },
-    
-   lecturesCompleted: []
-},
-{
- minimize: false
-}
+    courseId: {
+      type: String,
+      required: true,
+    },
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+
+    lecturesCompleted: [],
+  },
+  {
+    minimize: false,
+  },
 );
+
+courseProgressSchema.index({ userId: 1, courseId: 1 });
+
 const CourseProgress = mongoose.model("CourseProgress", courseProgressSchema);
 export default CourseProgress;

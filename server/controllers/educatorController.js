@@ -31,7 +31,7 @@ export const addCourse = async (req, res) => {
 
     console.log(
       "File received:",
-      imageFile ? imageFile.originalname : "No file"
+      imageFile ? imageFile.originalname : "No file",
     );
 
     if (!imageFile) {
@@ -92,21 +92,30 @@ export const educatorDashboardData = async (req, res) => {
     });
     const totalEarnings = purchases.reduce(
       (sum, purchase) => sum + purchase.amount,
-      0
+      0,
     );
+
+    // Batch fetch all enrolled students instead of N+1 queries
+    const allStudentIds = [
+      ...new Set(courses.flatMap((c) => c.enrolledStudents)),
+    ];
+    const students = await User.find(
+      { _id: { $in: allStudentIds } },
+      "name imageUrl",
+    );
+    const studentMap = new Map(students.map((s) => [s._id.toString(), s]));
 
     const enrolledStudentsData = [];
     for (const course of courses) {
-      const students = await User.find(
-        { _id: { $in: course.enrolledStudents } },
-        "name imageUrl"
-      );
-      students.forEach((student) => {
-        enrolledStudentsData.push({
-          courseTitle: course.courseTitle,
-          student,
-        });
-      });
+      for (const studentId of course.enrolledStudents) {
+        const student = studentMap.get(studentId.toString());
+        if (student) {
+          enrolledStudentsData.push({
+            courseTitle: course.courseTitle,
+            student,
+          });
+        }
+      }
     }
     res.json({
       success: true,
@@ -187,7 +196,7 @@ export const updateCourse = async (req, res) => {
     if (parsedCourseData.discount !== undefined) {
       const discount = Math.min(
         Math.max(Number(parsedCourseData.discount) || 0, 0),
-        100
+        100,
       );
       updates.discount = discount;
     }

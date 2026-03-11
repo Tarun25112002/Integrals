@@ -13,8 +13,10 @@ const Home = () => {
   const { allCourses } = useContext(AppContext);
 
   useEffect(() => {
-    if (allCourses.length > 0) {
-      setIsLoading(false);
+    if (allCourses && allCourses.length >= 0) {
+      // Set loading false once courses data is fetched (even if empty)
+      const timer = setTimeout(() => setIsLoading(false), 100);
+      return () => clearTimeout(timer);
     }
   }, [allCourses]);
 

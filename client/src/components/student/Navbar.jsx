@@ -25,7 +25,7 @@ const Navbar = () => {
 
       const { data } = await axios.get(
         backendUrl + "/api/educator/update-role",
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (data.message === "Role updated to educator successfully") {
@@ -47,13 +47,13 @@ const Navbar = () => {
       toast.error(
         error.response?.data?.message ||
           error.message ||
-          "Failed to update role"
+          "Failed to update role",
       );
     }
   };
   return (
     <div
-      className={`flex justify-between items-center px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 ${
+      className={`flex justify-between items-center px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-200 py-4 ${
         isCourseListpage ? "bg-white" : "bg-cyan-100/70"
       }`}
     >
